@@ -1,215 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Shivam Sharma's Portfolio - Web Developer & C++ Programmer">
-    <title>Shivam Sharma | Portfolio</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shivam Sharma's portfolio — web developer and C++ programmer.">
+  <meta name="theme-color" content="#0a0a23">
+  <title>Shivam Sharma | Portfolio</title>
+  <link rel="icon" type="image/png" href="./public/icons/favicon.png">
+  <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-     <div class="loading-screen">
-        <div class="card">
-          <div class="header">
-            <div class="img"></div>
-            <div class="details">
-              <span class="name"></span>
-              <span class="about"></span>
-            </div>
-          </div>
-          <div class="description">
-            <div class="line line-1"></div>
-            <div class="line line-2"></div>
-            <div class="line line-3"></div>
-          </div>
-          <div class="btns">
-            <div class="btn btn-1"></div>
-            <div class="btn btn-2"></div>
-          </div>
-        </div>
+  <div class="loading-screen" aria-label="Loading portfolio" role="status">
+    <div class="card" aria-hidden="true">
+      <div class="header">
+        <div class="img"></div>
+        <div class="details"><span class="name"></span><span class="about"></span></div>
       </div>
-      <div class="display-none">
-    <header>
-        <nav class="vertical-nav">
-            <div class="left">Shivam Sharma</div>
-            <div class="right">
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#skills">Skills</a></li>
-                    <li><a href="#Project">Projects</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                    
-                </ul>
-            </div>
-        </nav>
-    </header>
+      <div class="description">
+        <div class="line line-1"></div>
+        <div class="line line-2"></div>
+        <div class="line line-3"></div>
+      </div>
+      <div class="btns"><div class="btn btn-1"></div><div class="btn btn-2"></div></div>
+    </div>
+  </div>
+
+  <div class="site-content" hidden>
+    <div data-component="Navbar"></div>
 
     <main>
-        <div class="box-down">
-            <img src="uparrow.png" alt="Scroll to top" onclick="scrollToTop()">
-        </div>
+      <button class="box-down" type="button" aria-label="Scroll to top">
+        <img src="./public/icons/uparrow.png" alt="">
+      </button>
 
-        <section class="firstsection" id="home">
-            <div class="leftsection">
-                <span>Hi, I'm</span>
-                <span class="purple">Shivam Sharma</span>
-                <span>A Passionate</span>
-                <span class="purple">Web Developer</span>
-                <span id="element"></span>
+      <div data-component="Hero"></div>
+      <hr>
+
+      <section class="home" aria-labelledby="intro-title">
+        <div class="container">
+          <div class="intro">
+            <h1 id="intro-title">Hi, I'm <span class="highlight purple">Shivam Sharma</span></h1>
+            <h2>A Passionate <span class="highlight purple">Web Developer &amp; C++ Programmer</span></h2>
+            <p>
+              I specialize in crafting modern, responsive websites and solving problems with
+              efficient code. My approach blends clean design with seamless functionality.
+            </p>
+            <div class="buttons">
+              <a class="button-link" href="#projects">View My Work</a>
+              <a class="button-link" href="./public/resume/resume.pdf" target="_blank" rel="noopener noreferrer">Download Resume</a>
+              <a class="button-link" href="#contact">Let's Connect</a>
             </div>
-            <div class="rightsection">
-                <img src="deb2.png" alt="Shivam Sharma">
-            </div>
-        </section>
+          </div>
 
-        <hr>
-
-        <section class="home">
-            <div class="container">
-                <div class="intro">
-                    <h1>Hi, I'm <span class="highlight purple">Shivam Sharma</span></h1>
-                    <h2>A Passionate <span class="highlight purple">Web Developer & C++ Programmer</span></h2>
-                    <p>I specialize in crafting modern, responsive websites and solving problems with efficient code. My approach blends clean design with seamless functionality, ensuring each project not only looks great but performs optimally across all devices.</p>
-                    <div class="buttons">
-                        <button><a href="#skills">View My Work</a></button>
-                        <button><a href="Shivam_Sharma_Resume_2026.pdf" target="_blank">Download Resume</a></button>
-                        <button><a href="#contact">Let’s Connect</a></button>
-                        
-                    </div>
-                </div>
-                <div class="profile-img">
-                    <img src="profile.jpg" alt="Profile Photo">
-                </div>
-            </div>
-        </section>
-
-        <hr>
-
-        <section class="about-box" id="about">
-            <h1>About Me 🚀</h1>
-            <div class="about-text">
-                <p>Welcome to my portfolio! I’m a B.Tech CSE student passionate about creating interactive web experiences. With expertise in HTML, CSS, JavaScript, and C++, I transform ideas into functional, visually appealing projects. I enjoy crafting clean, efficient code for both sleek front-end interfaces and complex C++ solutions.
-
-                    Driven by curiosity, I’m constantly learning and tackling challenges that enhance my skills. <br><br>Whether it's building responsive websites, developing algorithms, or exploring new technologies, I strive to deliver quality and innovation in every project.
-                    
-                    Join me on my journey as I continue to grow, learn, and push the boundaries of what technology can achieve. Feel free to explore my work and connect with me—I’d love to collaborate on exciting projects!.</p>
-                <h1>What I Do:</h1>
-                <p>💡 <strong>Front-End Development:</strong> Building responsive websites with HTML, CSS, and JavaScript.<br>
-                ⚙️ <strong>C++ Programming:</strong> Writing optimized algorithms and solving complex problems.<br>
-                🚀 <strong>Continuous Learning:</strong> Exploring new technologies and best practices.</p>
-                <h1>My Goals:</h1>
-                <p>💡 Master Full-Stack Development<br>
-                    ⚙️ Contribute to Open-Source<br>
-                    🚀 Build Scalable Web Applications</p>
-            </div>
-        </section>
-
-        <hr>
-
-        <section class="secondsection" id="skills">
-            <h1>Skills & Expertise</h1>
-            <div class="box">
-                <div class="vertical">
-                    <img src="html.png" class="image-top" alt="HTML">
-                    <div class="vertical-text-title">HTML Developer</div>
-                    <div class="vertical-text-desc">Crafting semantic, accessible websites with HTML5 for optimal performance.</div>
-                </div>
-                <div class="vertical">
-                    <img src="css.png" class="image-top" alt="CSS">
-                    <div class="vertical-text-title">CSS Developer</div>
-                    <div class="vertical-text-desc">Creating responsive designs with CSS3, Flexbox, and Grid.</div>
-                </div>
-                <div class="vertical">
-                    <img src="js.png" class="image-top" alt="JavaScript">
-                    <div class="vertical-text-title">JavaScript Developer</div>
-                    <div class="vertical-text-desc">Building dynamic web applications with ES6 and DOM manipulation.</div>
-                </div>
-                <div class="vertical">
-                    <img src="c++.png" class="image-top" alt="C++">
-                    <div class="vertical-text-title">C++ Programmer</div>
-                    <div class="vertical-text-desc">Developing high-performance applications with OOP principles.</div>
-                </div>
-                <div class="vertical">
-                    <img src="python.png" class="image-top" alt="Python">
-                    <div class="vertical-text-title">Python Developer</div>
-                    <div class="vertical-text-desc">Building scalable applications with Django and data analysis tools.</div>
-                </div>
-            </div>
-        </section>
-
-        <hr>
-<!-- new section added -->
-<section class="project-section" id="Project">
-    <h1>My Projects</h1>
-    <div class="project-box">
-        <img src="c++.png" alt="Project 1">
-        <div class="project-text">
-            <h1>CLI LIBRARY MANAGEMENT SYSTEM [CRUD]</h1>
-            <p>A CLI (Command-Line Interface) Library Management System with CRUD (Create, Read, Update, Delete) operations using MySQL is a software application designed to manage library resources like books, members, and transactions. It operates through text-based commands rather than a graphical user interface, making it lightweight and efficient.</p>
-            <a href="https://github.com/shivamsharma2334/Library_Management/tree/main" target="_blank"">View Project <img src="github.png" alt="Arrow"></a>
+          <div class="profile-img">
+            <img src="./src/assets/images/profile.jpg" alt="Portrait of Shivam Sharma">
+          </div>
         </div>
-    </div>
-    
-    <!-- Repeat for other projects -->
-    <div class="project-box">
-        <img src="js.png" alt="Project 2">
-        <div class="project-text">
-            <h1>WEATHER APP USING API</h1>
-            <p>The Weather App built with JavaScript provides real-time weather updates for any city around the world. By entering a city name, users can instantly view important weather information, such as current temperature, humidity levels, weather conditions, and forecasts. The app fetches live data using an API and dynamically updates the user interface to keep the information accurate and up-to-date.</p>
-            <a href="https://weather-main-xfqp.onrender.com" target="_blank">View Project <img src="weather.png" alt="Arrow"></a>
-        </div>
-    </div>
-      
-    <!-- Repeat for other projects -->
-    <div class="project-box">
-        <img src="vite.png" alt="Project 3">
-        <div class="project-text">
-            <h1>CROP PREDICTION USING AI</h1>
-            <p>Crop Prediction Using AI is a modern agricultural technique that uses artificial intelligence (AI) to forecast the type and yield of crops based on various parameters like soil type, weather conditions, temperature, rainfall, and historical data.This leads to improved productivity, efficient resource use, and reduced risk of crop failure.</p>
-            <a href="https://ai-crop-prediction.onrender.com" target="_blank">View Project <img src="crop.png" alt="Arrow"></a>
-        </div>
-    </div>
-      <!-- Repeat for other projects -->
-    <div class="project-box">
-        <img src="js.png" alt="Project 2">
-        <div class="project-text">
-            <h1>SPOTIFY CLONE</h1>
-            <p>The Spotify Clone project is a web or mobile-based music streaming application inspired by the popular digital music platform, Spotify. This project aims to replicate the core functionalities of Spotify such as music playback, playlists, user authentication, and song browsing, offering users an intuitive and seamless experience to listen to their favorite songs anytime, anywhere.</p>
-            <a href="https://spotifycloneshivam.netlify.app/" target="_blank">View Project <img src="js.png" alt="Arrow"></a>
-        </div>
-    </div>
-</section>
+      </section>
+
+      <hr>
+      <div data-component="About"></div>
+      <hr>
+      <div data-component="Skills"></div>
+      <hr>
+      <div data-component="Projects"></div>
     </main>
 
-    <footer id="contact">
-        <div class="footer-box">
-            <div class="footer-text">
-                <img src="gmail.png" alt="Email">
-                <p>Contact me at: <a href="mailto:shivamsharma123jmt@gmail.com">shivamsharma123jmt@gmail.com</a></p>
-            </div>
-            <div class="contact-form">
-                <h2>Contact Me</h2>
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name" placeholder="Your Name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="Your Email" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" placeholder="Your Message" required></textarea>
-                </div>
-                <button type="button" class="submit-btn" onclick="submitForm()">Send Message</button>
-            </div>
-        </div>
-    </footer>
-      </div>
+    <div data-component="Contact"></div>
+  </div>
 
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-    <script src="script.js"></script>
+  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>
