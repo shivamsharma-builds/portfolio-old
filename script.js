@@ -4,6 +4,9 @@ const COMPONENTS = [
   "About",
   "Skills",
   "Projects",
+  "Experience",
+  "Certificates",
+  "Education",
   "Contact"
 ];
 
@@ -114,11 +117,11 @@ function initializeInteractions() {
     document.querySelector("#element")
   ) {
     new Typed("#element", {
-      strings: [
+      strings: (window.__PORTFOLIO_TYPED || [
         "&amp; Efficient C++ Programmer",
         "Python Developer",
         "Web Enthusiast"
-      ],
+      ]),
 
       typeSpeed: 70,
 
@@ -542,7 +545,7 @@ window.addEventListener(
     try {
 
       await loadComponents();
-      await loadPortfolioContent();
+      await loadPortfolioData();
 
     } catch (error) {
 
@@ -575,71 +578,27 @@ window.addEventListener(
 
   }
 );
-/* =========================================================
-   DATABASE-BACKED PORTFOLIO CONTENT
-   ========================================================= */
-
-async function loadPortfolioContent() {
+async function loadPortfolioData() {
   try {
-    const response = await fetch('/api/content', { cache: 'no-store' });
-    if (!response.ok) return;
+    const response = await fetch('/api/public', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Portfolio API unavailable');
     const data = await response.json();
-    const site = data.site;
-    if (!site) return;
-
-    const setText = (selector, value) => {
-      const el = document.querySelector(selector);
-      if (el) el.textContent = value || '';
-    };
-
-    setText('#home-name', site.full_name);
-    setText('#home-intro', site.intro);
-    setText('#home-headline', site.headline);
-
-    const profile = document.querySelector('.profile-img img');
-    if (profile && site.profile_image_url) profile.src = site.profile_image_url;
-
-    const resume = document.querySelector('a[href*="resume.pdf"]');
-    if (resume && site.resume_url) resume.href = site.resume_url;
-
-    const email = document.querySelector('#contact a[href^="mailto:"]');
-    if (email) { email.href = `mailto:${site.email}`; email.textContent = site.email; }
-
-    const github = document.querySelector('#contact a[href*="github.com"]');
-    if (github) { github.href = site.github; github.textContent = site.github.replace(/^https?:\/\//, ''); }
-
-    const location = document.querySelector('#contact .contact-item:nth-of-type(3) p');
-    if (location) location.textContent = site.location;
-
-    renderDatabaseSections(data);
-  } catch (error) {
-    console.warn('Database content unavailable; using local HTML content.', error);
-  }
+    const s = data.site;
+    const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value||''; };
+    set('hero-name', s.name); set('hero-headline', s.headline); set('intro-title', `Hi, I'm ${s.name}`); window.__PORTFOLIO_TYPED = String(s.hero_typed || '').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const intro = document.querySelector('.intro p'); if(intro) intro.textContent=s.intro||'';
+    const resume=document.querySelector('.intro a[href*="resume"]'); if(resume && s.resume_file) resume.href=s.resume_file;
+    const heroVisual=document.querySelector('#hero-visual-image'); if(heroVisual && s.hero_image) heroVisual.src=s.hero_image;
+    const profile=document.querySelector('#profile-image'); if(profile && s.profile_image) profile.src=s.profile_image;
+    set('about-title', s.about_title); set('about-text', s.about_text); set('what-i-do', s.what_i_do); set('goals', s.goals);
+    set('contact-email', s.email); const email=document.getElementById('contact-email'); if(email) email.href=`mailto:${s.email}`;
+    set('contact-github', s.github); const gh=document.getElementById('contact-github'); if(gh) gh.href=s.github;
+    set('contact-location', s.location); set('footer-name', s.name); const footer=document.querySelector('.footer-description'); if(footer) footer.textContent=s.footer_description||footer.textContent;
+    const skills=document.getElementById('skills-list'); if(skills) skills.innerHTML=data.skills.map(x=>`<article class="vertical"><img src="${x.icon_file||'public/icons/html.png'}" class="image-top" alt="${escapeHtml(x.title)}"><h2 class="vertical-text-title">${escapeHtml(x.title)}</h2><p class="vertical-text-desc">${escapeHtml(x.description)}</p></article>`).join('');
+    const projects=document.getElementById('projects-list'); if(projects) projects.innerHTML=data.projects.map(x=>`<article class="project-box"><img src="${x.icon_file||'public/icons/js.png'}" alt="${escapeHtml(x.title)}"><div class="project-text"><h2>${escapeHtml(x.title)}</h2><p>${escapeHtml(x.description)}</p>${(x.github_url||x.project_url)?`<a href="${x.github_url||x.project_url}" target="_blank" rel="noopener noreferrer">GitHub <img src="public/icons/github.png" alt=""></a>`:''}</div></article>`).join('');
+    const experience=document.getElementById('experience-list'); if(experience) experience.innerHTML=(data.experiences||[]).map(x=>`<article class="project-box">${x.logo_image?`<img src="${escapeHtml(x.logo_image)}" alt="${escapeHtml(x.company||'Company')} logo">`:''}<div class="project-text"><h2>${escapeHtml(x.title||x.role||'')}</h2><p><strong>${escapeHtml(x.company||'')}</strong>${x.location?' · '+escapeHtml(x.location):''}</p><p>${escapeHtml(x.duration||'')} ${!x.duration&&x.start_date?escapeHtml(x.start_date)+' '+(x.end_date?'— '+escapeHtml(x.end_date):''):''}</p><p>${escapeHtml(x.description||'')}</p>${x.url?`<a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">View Experience</a>`:''}</div></article>`).join('');
+    const certificates=document.getElementById('certificates-list'); if(certificates) certificates.innerHTML=(data.certificates||[]).map(x=>`<article class="project-box">${x.certificate_image?`<img src="${escapeHtml(x.certificate_image)}" alt="${escapeHtml(x.title)}">`:''}<div class="project-text"><h2>${escapeHtml(x.title||'')}</h2><p><strong>${escapeHtml(x.issuer||'')}</strong>${x.issue_date?' · '+escapeHtml(x.issue_date):''}</p><p>${escapeHtml(x.description||'')}</p>${x.credential_id?`<p><strong>Credential ID:</strong> ${escapeHtml(x.credential_id)}</p>`:''}${x.credential_url?`<a href="${escapeHtml(x.credential_url)}" target="_blank" rel="noopener noreferrer">Verify Certificate</a>`:''}</div></article>`).join('');
+    const education=document.getElementById('education-list'); if(education) education.innerHTML=(data.education||[]).map(x=>`<article class="project-box">${x.logo_image?`<img src="${escapeHtml(x.logo_image)}" alt="${escapeHtml(x.institution||'Institution')} logo">`:''}<div class="project-text"><h2>${escapeHtml(x.institution||'')}</h2><p>${escapeHtml(x.discipline||'')}${x.domain_name?' · '+escapeHtml(x.domain_name):''}</p><p>${x.branch?`Branch: ${escapeHtml(x.branch)}`:''}${x.stream?`${x.branch?' · ':''}Stream: ${escapeHtml(x.stream)}`:''}</p><p>${escapeHtml(x.duration||'')}${!x.duration&&x.start_date?' · '+escapeHtml(x.start_date)+' '+(x.end_date?'— '+escapeHtml(x.end_date):''):''}</p>${x.description?`<p>${escapeHtml(x.description)}</p>`:''}${x.url?`<a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Institution Website</a>`:''}</div></article>`).join('');
+  } catch (error) { console.error(error); }
 }
-
-function safeText(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
-  }[char]));
-}
-
-function renderDatabaseSections(data) {
-  const about = document.querySelector('[data-component="About"]');
-  if (about && data.site) {
-    const paragraphs = safeText(data.site.about_text).split(/\n\s*\n/).filter(Boolean).map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
-    const what = safeText(data.site.what_i_do).replace(/\n\s*\n/g,'<br><br>').replace(/\n/g,'<br>');
-    const goals = safeText(data.site.goals).replace(/\n\s*\n/g,'<br><br>').replace(/\n/g,'<br>');
-    about.innerHTML = `<section class="about-box" id="about" aria-labelledby="about-title"><h1 id="about-title">${safeText(data.site.about_title)}</h1><div class="about-text">${paragraphs}<h2>What I Do</h2><p>${what}</p><h2>My Goals</h2><p>${goals}</p></div></section>`;
-  }
-
-  const skills = document.querySelector('[data-component="Skills"]');
-  if (skills && Array.isArray(data.skills)) {
-    skills.innerHTML = `<section class="secondsection" id="skills" aria-labelledby="skills-title"><h1 id="skills-title">Skills &amp; Expertise</h1><div class="box">${data.skills.map(s => `<article class="vertical"><img src="${safeText(s.icon_url)}" class="image-top" alt="${safeText(s.title)}"><h2 class="vertical-text-title">${safeText(s.title)}</h2><p class="vertical-text-desc">${safeText(s.description)}</p></article>`).join('')}</div></section>`;
-  }
-
-  const projects = document.querySelector('[data-component="Projects"]');
-  if (projects && Array.isArray(data.projects)) {
-    projects.innerHTML = `<section class="project-section" id="projects" aria-labelledby="projects-title"><h1 id="projects-title">My Projects</h1><div class="project-grid">${data.projects.map(p => `<article class="project-box"><img src="${safeText(p.image_url)}" alt="${safeText(p.title)}"><div class="project-text"><h2>${safeText(p.title)}</h2><p>${safeText(p.description)}</p><a href="${safeText(p.project_url)}" target="_blank" rel="noopener noreferrer">View Project <img src="./public/icons/github.png" alt=""></a></div></article>`).join('')}</div></section>`;
-  }
-
-}
+function escapeHtml(value=''){return String(value).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}

@@ -380,11 +380,14 @@ main {
 
     border: 4px solid var(--accent);
     border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
 
     box-shadow:
         0 0 20px rgba(138, 74, 243, 0.3);
 
-    animation: float 3s ease-in-out infinite;
+    /* Hero image only: subtle vertical motion */
+    animation: heroImageFloat 4s ease-in-out infinite;
 }
 
 /* =========================
@@ -1215,15 +1218,20 @@ main hr {
     }
 }
 
-@keyframes float {
-
+@keyframes heroImageFloat {
     0%,
     100% {
         transform: translateY(0);
     }
 
     50% {
-        transform: translateY(-15px);
+        transform: translateY(-8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rightsection img {
+        animation: none;
     }
 }
 
@@ -1854,4 +1862,7 @@ main hr {
 
         transition-duration: 0.01ms !important;
     }
-}
+}.about-layout{display:grid;grid-template-columns:minmax(180px,320px) 1fr;gap:32px;align-items:center}.about-image-wrap{display:flex;justify-content:center}.about-image-wrap img{width:100%;max-width:320px;aspect-ratio:1/1;object-fit:cover;border-radius:24px;border:1px solid rgba(255,255,255,.12)}@media(max-width:720px){.about-layout{grid-template-columns:1fr}.about-image-wrap img{max-width:260px}}
+
+/* About section: text-only, responsive, no photo/upload dependency */
+.about-box{width:min(100%,1100px);margin:0 auto;padding:72px 24px}.about-text{max-width:900px;margin:0 auto}.about-heading{margin-bottom:20px}.about-heading h1{margin:4px 0 0;font-size:clamp(2rem,4vw,3rem);line-height:1.1}.section-kicker{display:inline-block;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65;font-weight:700}.about-text>p{font-size:1.08rem;line-height:1.85;margin:0 0 34px;white-space:pre-line}.about-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.about-block{padding:22px;border:1px solid rgba(128,128,128,.18);border-radius:16px;background:rgba(128,128,128,.04)}.about-block h2{margin:0 0 10px;font-size:1.05rem}.about-block p{margin:0;line-height:1.75;white-space:pre-line}@media(max-width:720px){.about-box{padding:52px 18px}.about-columns{grid-template-columns:1fr}.about-text>p{font-size:1rem}}

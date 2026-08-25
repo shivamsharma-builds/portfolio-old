@@ -1,35 +1,35 @@
-# Shivam Sharma Portfolio — Admin + Aiven MySQL
+# Shivam Portfolio — Netlify Production Build
 
-This version keeps the existing portfolio design but adds a Node.js/Express backend, Aiven MySQL database, secure admin login, and a dashboard for editing portfolio content.
+This build is prepared for Netlify with:
 
-## Features
-- Public portfolio loads profile, about, skills, projects, and contact details from MySQL.
-- `/admin` provides an admin login and dashboard.
-- Admin can edit profile/contact/about content.
-- Admin can add, edit, reorder, and delete skills.
-- Admin can add, edit, reorder, and delete projects.
-- Passwords are stored as bcrypt hashes.
-- Admin session is stored in an HTTP-only cookie.
+- Netlify Functions for `/api/*` so the admin API works in a serverless deployment.
+- Netlify Blobs for persistent uploads. Uploaded hero/profile images no longer depend on the read-only deploy filesystem.
+- A signed, HttpOnly admin session cookie instead of Express in-memory sessions.
+- A distinct hero image and profile image target on `index.html`, so the Admin panel's **Hero Photo** and **Profile Image** update the correct sections.
+- Browser image compression and local preview before upload.
+- Existing Aiven/MySQL data remains the source of portfolio content.
 
-## Aiven MySQL setup
-1. Create an Aiven MySQL service.
-2. Select the database you want to use (Aiven commonly provides `defaultdb`) and run `schema.sql` in Aiven's SQL console (or your MySQL client).
-3. Copy `.env.example` to `.env` and enter your Aiven host, port, username, password, and database name.
-4. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`. On startup, the server creates or updates that admin account using a bcrypt hash.
+## Deploy to Netlify
 
-The admin password is never sent to the browser. Keep `.env` private and use a strong `SESSION_SECRET`.
+1. Upload/push this project to Netlify.
+2. Netlify should detect `netlify.toml`; the publish directory is the project root and Functions are in `netlify/functions`.
+3. Add these environment variables in Netlify Project configuration → Environment variables:
+   - `DB_HOST`
+   - `DB_PORT`
+   - `DB_USER`
+   - `DB_PASSWORD`
+   - `DB_NAME`
+   - `DB_SSL=true`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD`
+   - `SESSION_SECRET`
+4. The first function request creates any missing compatible tables/columns and creates the first admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD` if the `admins` table is empty.
+5. Open `/admin.html`, sign in, upload a Hero Photo and Profile Image, save, then open the public site and hard-refresh.
 
-## Local run
+## Database
 
-```bash
-npm install
-cp .env.example .env
-npm start
-```
+Run `schema.sql` against the existing MySQL database if it has never been initialized. The Netlify function also adds compatible missing columns automatically.
 
-Open:
-- Portfolio: `http://localhost:3000/`
-- Admin dashboard: `http://localhost:3000/admin`
+## Important security note
 
-## Deployment
-Set the same environment variables in your hosting provider. Use `NODE_ENV=production`, a strong `SESSION_SECRET`, and Aiven's SSL connection settings. The database password and session secret must remain server-side.
+Do **not** commit `.env` or database credentials. The original uploaded archive contained live credentials, so rotate the Aiven database password, admin password, and session secret before putting this project into a public repository or production deployment.
