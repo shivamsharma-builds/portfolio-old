@@ -62,7 +62,7 @@ $('#loginForm')?.addEventListener('submit', async event => {
   event.preventDefault();
   const button = $('#loginBtn');
   button.disabled = true;
-  button.textContent = 'Signing in…';
+  button.textContent = 'Signing inâ€¦';
   setStatus($('#loginStatus'), '');
 
   try {
@@ -140,7 +140,7 @@ $('#siteForm')?.addEventListener('submit', async event => {
   event.preventDefault();
   const button = $('#siteSaveBtn');
   button.disabled = true;
-  button.textContent = 'Saving…';
+  button.textContent = 'Savingâ€¦';
 
   try {
     await api('/api/admin/site', {
@@ -253,7 +253,7 @@ function decorateLocks(root = document) {
     const label = field.closest('div')?.querySelector(`label[for="${field.id}"]`) || field.parentElement?.querySelector(':scope > label');
     if (label && !label.querySelector('.lock-btn')) {
       const button = document.createElement('button');
-      button.type = 'button'; button.className = 'lock-btn'; button.textContent = '🔒';
+      button.type = 'button'; button.className = 'lock-btn'; button.textContent = 'ðŸ”’';
       button.title = 'Unlock this field to edit';
       button.addEventListener('click', () => setFieldLocked(field, !field.disabled));
       label.classList.add('field-head'); label.appendChild(button);
@@ -266,7 +266,7 @@ function setFieldLocked(field, locked) {
   field.disabled = !!locked;
   field.classList.toggle('locked-field', !!locked);
   const button = field.closest('div')?.querySelector('.lock-btn');
-  if (button) { button.textContent = locked ? '🔒' : '🔓'; button.title = locked ? 'Unlock this field to edit' : 'Lock this field'; }
+  if (button) { button.textContent = locked ? 'ðŸ”’' : 'ðŸ”“'; button.title = locked ? 'Unlock this field to edit' : 'Lock this field'; }
 }
 
 function setAllFieldsLocked(locked) {
@@ -308,7 +308,7 @@ async function saveProjectOnly(form) {
 async function saveAllData() {
   const button = $('#saveAllBtn');
   const status = $('#saveAllStatus');
-  button.disabled = true; button.textContent = 'Saving All…';
+  button.disabled = true; button.textContent = 'Saving Allâ€¦';
   setStatus(status, '');
   try {
     await saveSiteOnly();
@@ -321,7 +321,7 @@ async function saveAllData() {
     await load();
   } catch (error) {
     setStatus(status, `Save stopped: ${error.message}`);
-  } finally { button.disabled = false; button.textContent = '💾 Save All Data'; }
+  } finally { button.disabled = false; button.textContent = 'ðŸ’¾ Save All Data'; }
 }
 
 function renderSkills() {
@@ -367,7 +367,7 @@ function renderSkills() {
       const status = $('.skillStatus', form);
       const button = $('button[type="submit"]', form);
       button.disabled = true;
-      button.textContent = 'Saving…';
+      button.textContent = 'Savingâ€¦';
 
       try {
         const formData = await formDataWithLockedFields(form);
@@ -460,7 +460,7 @@ function renderProjects() {
       const status = $('.projectStatus', form);
       const button = $('button[type="submit"]', form);
       button.disabled = true;
-      button.textContent = 'Saving…';
+      button.textContent = 'Savingâ€¦';
 
       try {
         const formData = await formDataWithLockedFields(form);
@@ -498,9 +498,9 @@ function renderProjects() {
 async function saveExperienceOnly(form) { const fd=await formDataWithLockedFields(form); fd.set('id',form.dataset.id||''); await api('/api/admin/experiences',{method:'POST',body:fd}); }
 async function saveCertificateOnly(form) { const fd=await formDataWithLockedFields(form); fd.set('id',form.dataset.id||''); fd.set('existing_certificate_image', data.certificates.find(x=>String(x.id)===String(form.dataset.id))?.certificate_image||''); await api('/api/admin/certificates',{method:'POST',body:fd}); }
 async function saveEducationOnly(form) { const fd=await formDataWithLockedFields(form); fd.set('id',form.dataset.id||''); fd.set('existing_logo_image', data.education.find(x=>String(x.id)===String(form.dataset.id))?.logo_image||''); await api('/api/admin/education',{method:'POST',body:fd}); }
-function renderExperiences(){ const c=$('#experiences'); if(!c)return; const items=data.experiences||[]; c.innerHTML=items.length?items.map(x=>`<div class="item"><form class="experienceForm" data-id="${esc(x.id)}" enctype="multipart/form-data"><div class="grid"><div><label>Experience Title</label><input name="title" value="${esc(x.title||x.role||'')}" required></div><div><label>Company</label><input name="company" value="${esc(x.company||'')}"></div><div><label>Duration</label><input name="duration" value="${esc(x.duration||'')}" placeholder="Jun 2025 — Present"></div><div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date||'')}"></div><div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date||'')}"></div><div><label>Company Logo <span class="muted small">(optional)</span></label><div class="filebox"><input name="logo_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">${x.logo_image?`<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Company logo"><span class="small">Current logo</span></div>`:''}</div></div><div class="full"><label>Description</label><textarea name="description">${esc(x.description||'')}</textarea></div><div><label>Location <span class="muted small">(optional)</span></label><input name="location" value="${esc(x.location||'')}"></div><div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url||'')}" placeholder="https://..."></div><div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order??0)}"></div></div><div class="actions"><button type="submit">Save Experience</button><button type="button" class="danger delExperience" data-id="${esc(x.id)}">Delete</button></div><p class="status experienceStatus"></p></form></div>`).join(''):'<p class="muted">No experience entries yet.</p>'; decorateLocks(c); $$('.experienceForm',c).forEach(f=>f.addEventListener('submit',async e=>{e.preventDefault();try{await saveExperienceOnly(f);setStatus($('.experienceStatus',f),'Experience saved.',true);await load();}catch(err){setStatus($('.experienceStatus',f),err.message);}})); $$('.delExperience',c).forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this experience?'))return;try{await api(`/api/admin/experiences/${b.dataset.id}`,{method:'DELETE'});await load();}catch(e){alert(e.message);}})); }
+function renderExperiences(){ const c=$('#experiences'); if(!c)return; const items=data.experiences||[]; c.innerHTML=items.length?items.map(x=>`<div class="item"><form class="experienceForm" data-id="${esc(x.id)}" enctype="multipart/form-data"><div class="grid"><div><label>Experience Title</label><input name="title" value="${esc(x.title||x.role||'')}" required></div><div><label>Company</label><input name="company" value="${esc(x.company||'')}"></div><div><label>Duration</label><input name="duration" value="${esc(x.duration||'')}" placeholder="Jun 2025 â€” Present"></div><div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date||'')}"></div><div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date||'')}"></div><div><label>Company Logo <span class="muted small">(optional)</span></label><div class="filebox"><input name="logo_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">${x.logo_image?`<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Company logo"><span class="small">Current logo</span></div>`:''}</div></div><div class="full"><label>Description</label><textarea name="description">${esc(x.description||'')}</textarea></div><div><label>Location <span class="muted small">(optional)</span></label><input name="location" value="${esc(x.location||'')}"></div><div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url||'')}" placeholder="https://..."></div><div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order??0)}"></div></div><div class="actions"><button type="submit">Save Experience</button><button type="button" class="danger delExperience" data-id="${esc(x.id)}">Delete</button></div><p class="status experienceStatus"></p></form></div>`).join(''):'<p class="muted">No experience entries yet.</p>'; decorateLocks(c); $$('.experienceForm',c).forEach(f=>f.addEventListener('submit',async e=>{e.preventDefault();try{await saveExperienceOnly(f);setStatus($('.experienceStatus',f),'Experience saved.',true);await load();}catch(err){setStatus($('.experienceStatus',f),err.message);}})); $$('.delExperience',c).forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this experience?'))return;try{await api(`/api/admin/experiences/${b.dataset.id}`,{method:'DELETE'});await load();}catch(e){alert(e.message);}})); }
 function renderCertificates(){ const c=$('#certificates'); if(!c)return; const items=data.certificates||[]; c.innerHTML=items.length?items.map(x=>`<div class="item"><form class="certificateForm" data-id="${esc(x.id)}" enctype="multipart/form-data"><div class="grid"><div><label>Certificate Title</label><input name="title" value="${esc(x.title)}" required></div><div><label>Issuer</label><input name="issuer" value="${esc(x.issuer||'')}"></div><div class="full"><label>Description</label><textarea name="description">${esc(x.description||'')}</textarea></div><div><label>Credential ID <span class="muted small">(optional)</span></label><input name="credential_id" value="${esc(x.credential_id||'')}"></div><div><label>Credential URL <span class="muted small">(optional)</span></label><input name="credential_url" value="${esc(x.credential_url||'')}" placeholder="https://..."></div><div><label>Certificate Image <span class="muted small">(optional)</span></label><input name="certificate_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">${x.certificate_image?`<div class="preview"><img src="${esc(asset(x.certificate_image))}" alt="Certificate"><span class="small">Current certificate</span></div>`:''}</div><div><label>Issue Date <span class="muted small">(optional)</span></label><input name="issue_date" value="${esc(x.issue_date||'')}"></div><div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order??0)}"></div></div><div class="actions"><button type="submit">Save Certificate</button><button type="button" class="danger delCertificate" data-id="${esc(x.id)}">Delete</button></div><p class="status certificateStatus"></p></form></div>`).join(''):'<p class="muted">No certificates yet.</p>'; decorateLocks(c); $$('.certificateForm',c).forEach(f=>f.addEventListener('submit',async e=>{e.preventDefault();try{await saveCertificateOnly(f);setStatus($('.certificateStatus',f),'Certificate saved.',true);await load();}catch(err){setStatus($('.certificateStatus',f),err.message);}})); $$('.delCertificate',c).forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this certificate?'))return;try{await api(`/api/admin/certificates/${b.dataset.id}`,{method:'DELETE'});await load();}catch(e){alert(e.message);}})); }
-function renderEducation(){ const c=$('#education'); if(!c)return; const items=data.education||[]; c.innerHTML=items.length?items.map(x=>`<div class="item"><form class="educationForm" data-id="${esc(x.id)}" enctype="multipart/form-data"><div class="grid"><div><label>School / College / University</label><input name="institution" value="${esc(x.institution||'')}" required></div><div><label>Logo Photo <span class="muted small">(optional)</span></label><div class="filebox"><input name="logo_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">${x.logo_image?`<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Institution logo"><span class="small">Current logo</span></div>`:''}</div></div><div><label>Discipline</label><input name="discipline" value="${esc(x.discipline||'')}" placeholder="Computer Science"></div><div><label>Domain</label><input name="domain_name" value="${esc(x.domain_name||'')}" placeholder="Technology"></div><div><label>Branch</label><input name="branch" value="${esc(x.branch||'')}" placeholder="CSE"></div><div><label>Stream</label><input name="stream" value="${esc(x.stream||'')}" placeholder="Science"></div><div><label>Duration</label><input name="duration" value="${esc(x.duration||'')}" placeholder="2022 — 2026"></div><div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date||'')}"></div><div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date||'')}"></div><div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url||'')}" placeholder="https://..."></div><div class="full"><label>Description <span class="muted small">(optional)</span></label><textarea name="description">${esc(x.description||'')}</textarea></div><div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order??0)}"></div></div><div class="actions"><button type="submit">Save Education</button><button type="button" class="danger delEducation" data-id="${esc(x.id)}">Delete</button></div><p class="status educationStatus"></p></form></div>`).join(''):'<p class="muted">No education entries yet.</p>'; decorateLocks(c); $$('.educationForm',c).forEach(f=>f.addEventListener('submit',async e=>{e.preventDefault();try{await saveEducationOnly(f);setStatus($('.educationStatus',f),'Education saved.',true);await load();}catch(err){setStatus($('.educationStatus',f),err.message);}})); $$('.delEducation',c).forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this education entry?'))return;try{await api(`/api/admin/education/${b.dataset.id}`,{method:'DELETE'});await load();}catch(e){alert(e.message);}})); }
+function renderEducation(){ const c=$('#education'); if(!c)return; const items=data.education||[]; c.innerHTML=items.length?items.map(x=>`<div class="item"><form class="educationForm" data-id="${esc(x.id)}" enctype="multipart/form-data"><div class="grid"><div><label>School / College / University</label><input name="institution" value="${esc(x.institution||'')}" required></div><div><label>Logo Photo <span class="muted small">(optional)</span></label><div class="filebox"><input name="logo_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">${x.logo_image?`<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Institution logo"><span class="small">Current logo</span></div>`:''}</div></div><div><label>Discipline</label><input name="discipline" value="${esc(x.discipline||'')}" placeholder="Computer Science"></div><div><label>Domain</label><input name="domain_name" value="${esc(x.domain_name||'')}" placeholder="Technology"></div><div><label>Branch</label><input name="branch" value="${esc(x.branch||'')}" placeholder="CSE"></div><div><label>Stream</label><input name="stream" value="${esc(x.stream||'')}" placeholder="Science"></div><div><label>Duration</label><input name="duration" value="${esc(x.duration||'')}" placeholder="2022 â€” 2026"></div><div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date||'')}"></div><div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date||'')}"></div><div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url||'')}" placeholder="https://..."></div><div class="full"><label>Description <span class="muted small">(optional)</span></label><textarea name="description">${esc(x.description||'')}</textarea></div><div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order??0)}"></div></div><div class="actions"><button type="submit">Save Education</button><button type="button" class="danger delEducation" data-id="${esc(x.id)}">Delete</button></div><p class="status educationStatus"></p></form></div>`).join(''):'<p class="muted">No education entries yet.</p>'; decorateLocks(c); $$('.educationForm',c).forEach(f=>f.addEventListener('submit',async e=>{e.preventDefault();try{await saveEducationOnly(f);setStatus($('.educationStatus',f),'Education saved.',true);await load();}catch(err){setStatus($('.educationStatus',f),err.message);}})); $$('.delEducation',c).forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Delete this education entry?'))return;try{await api(`/api/admin/education/${b.dataset.id}`,{method:'DELETE'});await load();}catch(e){alert(e.message);}})); }
 
 async function addEducation(){const b=$('#newEducation');b.disabled=true;try{const fd=new FormData();fd.set('institution','New Institution');fd.set('sort_order',String((data.education?.length||0)+1));await api('/api/admin/education',{method:'POST',body:fd});await load();}catch(e){alert(e.message)}finally{b.disabled=false}}
 async function addExperience(){const b=$('#newExperience');b.disabled=true;try{const fd=new FormData();fd.set('title','New Experience');fd.set('sort_order',String((data.experiences?.length||0)+1));await api('/api/admin/experiences',{method:'POST',body:fd});await load();}catch(e){alert(e.message)}finally{b.disabled=false}}
@@ -525,18 +525,29 @@ async function addSkill() {
 
 async function addProject() {
   const button = $('#newProject');
+  if (!button) return;
   button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Addingâ€¦';
   try {
     const formData = new FormData();
     formData.set('title', 'New Project');
     formData.set('description', '');
     formData.set('sort_order', String((data.projects?.length || 0) + 1));
-    await api('/api/admin/projects', {method:'POST', body:formData});
+    const result = await api('/api/admin/projects', {method:'POST', body:formData});
     await load();
+    // Put the newly created project in view on mobile and desktop.
+    const projectsCard = $('#projectsCard');
+    projectsCard?.scrollIntoView({behavior:'smooth', block:'start'});
+    if (result?.id) {
+      const created = document.querySelector(`.projectForm[data-id="${CSS.escape(String(result.id))}"]`);
+      created?.querySelector('input[name="title"]')?.focus();
+    }
   } catch (error) {
-    alert(error.message);
+    alert(`Could not add project: ${error.message}`);
   } finally {
     button.disabled = false;
+    button.textContent = originalText;
   }
 }
 
