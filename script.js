@@ -542,6 +542,7 @@ window.addEventListener(
     try {
 
       await loadComponents();
+      await loadPortfolioContent();
 
     } catch (error) {
 
@@ -574,3 +575,71 @@ window.addEventListener(
 
   }
 );
+/* =========================================================
+   DATABASE-BACKED PORTFOLIO CONTENT
+   ========================================================= */
+
+async function loadPortfolioContent() {
+  try {
+    const response = await fetch('/api/content', { cache: 'no-store' });
+    if (!response.ok) return;
+    const data = await response.json();
+    const site = data.site;
+    if (!site) return;
+
+    const setText = (selector, value) => {
+      const el = document.querySelector(selector);
+      if (el) el.textContent = value || '';
+    };
+
+    setText('#home-name', site.full_name);
+    setText('#home-intro', site.intro);
+    setText('#home-headline', site.headline);
+
+    const profile = document.querySelector('.profile-img img');
+    if (profile && site.profile_image_url) profile.src = site.profile_image_url;
+
+    const resume = document.querySelector('a[href*="resume.pdf"]');
+    if (resume && site.resume_url) resume.href = site.resume_url;
+
+    const email = document.querySelector('#contact a[href^="mailto:"]');
+    if (email) { email.href = `mailto:${site.email}`; email.textContent = site.email; }
+
+    const github = document.querySelector('#contact a[href*="github.com"]');
+    if (github) { github.href = site.github; github.textContent = site.github.replace(/^https?:\/\//, ''); }
+
+    const location = document.querySelector('#contact .contact-item:nth-of-type(3) p');
+    if (location) location.textContent = site.location;
+
+    renderDatabaseSections(data);
+  } catch (error) {
+    console.warn('Database content unavailable; using local HTML content.', error);
+  }
+}
+
+function safeText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+  }[char]));
+}
+
+function renderDatabaseSections(data) {
+  const about = document.querySelector('[data-component="About"]');
+  if (about && data.site) {
+    const paragraphs = safeText(data.site.about_text).split(/\n\s*\n/).filter(Boolean).map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+    const what = safeText(data.site.what_i_do).replace(/\n\s*\n/g,'<br><br>').replace(/\n/g,'<br>');
+    const goals = safeText(data.site.goals).replace(/\n\s*\n/g,'<br><br>').replace(/\n/g,'<br>');
+    about.innerHTML = `<section class="about-box" id="about" aria-labelledby="about-title"><h1 id="about-title">${safeText(data.site.about_title)}</h1><div class="about-text">${paragraphs}<h2>What I Do</h2><p>${what}</p><h2>My Goals</h2><p>${goals}</p></div></section>`;
+  }
+
+  const skills = document.querySelector('[data-component="Skills"]');
+  if (skills && Array.isArray(data.skills)) {
+    skills.innerHTML = `<section class="secondsection" id="skills" aria-labelledby="skills-title"><h1 id="skills-title">Skills &amp; Expertise</h1><div class="box">${data.skills.map(s => `<article class="vertical"><img src="${safeText(s.icon_url)}" class="image-top" alt="${safeText(s.title)}"><h2 class="vertical-text-title">${safeText(s.title)}</h2><p class="vertical-text-desc">${safeText(s.description)}</p></article>`).join('')}</div></section>`;
+  }
+
+  const projects = document.querySelector('[data-component="Projects"]');
+  if (projects && Array.isArray(data.projects)) {
+    projects.innerHTML = `<section class="project-section" id="projects" aria-labelledby="projects-title"><h1 id="projects-title">My Projects</h1><div class="project-grid">${data.projects.map(p => `<article class="project-box"><img src="${safeText(p.image_url)}" alt="${safeText(p.title)}"><div class="project-text"><h2>${safeText(p.title)}</h2><p>${safeText(p.description)}</p><a href="${safeText(p.project_url)}" target="_blank" rel="noopener noreferrer">View Project <img src="./public/icons/github.png" alt=""></a></div></article>`).join('')}</div></section>`;
+  }
+
+}

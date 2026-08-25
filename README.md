@@ -1,32 +1,35 @@
-# Shivam Sharma Portfolio
+# Shivam Sharma Portfolio — Admin + Aiven MySQL
 
-A component-based static portfolio website.
+This version keeps the existing portfolio design but adds a Node.js/Express backend, Aiven MySQL database, secure admin login, and a dashboard for editing portfolio content.
 
-## What was fixed
-- Corrected asset locations for icons, profile image, favicon, and resume.
-- Corrected the Projects anchor from `#Project` to `#projects`.
-- Removed the broken/empty navbar dependency and split the page into reusable HTML components.
-- Added a component loader in `script.js`.
-- Added responsive mobile navigation.
-- Improved the contact form interaction and validation.
-- Added safer external-link attributes.
+## Features
+- Public portfolio loads profile, about, skills, projects, and contact details from MySQL.
+- `/admin` provides an admin login and dashboard.
+- Admin can edit profile/contact/about content.
+- Admin can add, edit, reorder, and delete skills.
+- Admin can add, edit, reorder, and delete projects.
+- Passwords are stored as bcrypt hashes.
+- Admin session is stored in an HTTP-only cookie.
 
-## Components
-Located in `src/components/`:
-- `Navbar.html`
-- `Hero.html`
-- `About.html`
-- `Skills.html`
-- `Projects.html`
-- `Contact.html`
+## Aiven MySQL setup
+1. Create an Aiven MySQL service.
+2. Select the database you want to use (Aiven commonly provides `defaultdb`) and run `schema.sql` in Aiven's SQL console (or your MySQL client).
+3. Copy `.env.example` to `.env` and enter your Aiven host, port, username, password, and database name.
+4. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`. On startup, the server creates or updates that admin account using a bcrypt hash.
 
-## Run locally
-Because components are loaded with `fetch()`, open the project through a local web server instead of double-clicking `index.html`.
+The admin password is never sent to the browser. Keep `.env` private and use a strong `SESSION_SECRET`.
 
-For example:
+## Local run
 
 ```bash
-python -m http.server 4173
+npm install
+cp .env.example .env
+npm start
 ```
 
-Then open `http://localhost:4173/`.
+Open:
+- Portfolio: `http://localhost:3000/`
+- Admin dashboard: `http://localhost:3000/admin`
+
+## Deployment
+Set the same environment variables in your hosting provider. Use `NODE_ENV=production`, a strong `SESSION_SECRET`, and Aiven's SSL connection settings. The database password and session secret must remain server-side.
