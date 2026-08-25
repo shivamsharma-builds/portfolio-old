@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS projects (
   title VARCHAR(255) NOT NULL,
   description TEXT,
   icon_file VARCHAR(500),
+  icon_url VARCHAR(1000),
+  image_url VARCHAR(1000),
+  project_url VARCHAR(1000),
+  github_url VARCHAR(1000),
   project_file VARCHAR(500),
   sort_order INT DEFAULT 0
 );

@@ -173,6 +173,50 @@ async function handleEntity(request, table, fileField, folder, requiredField, ex
   await saveRow(table,id,f); return json({ok:true});
 }
 
+async function handleProject(request) {
+  requireAuth(request);
+  const form = await request.formData();
+  const f = fieldMap(form);
+  const id = f.id ? Number(f.id) : null;
+  if (!String(f.title || '').trim()) throw Object.assign(new Error('Project title is required.'), {status:400});
+
+  let current = {};
+  if (id) {
+    const [[row]] = await db.query('SELECT * FROM projects WHERE id=? LIMIT 1', [id]);
+    if (!row) throw Object.assign(new Error('Project entry not found.'), {status:404});
+    current = row;
+  }
+
+  // Project icon and project image are independent uploads.
+  const icon = await uploadFile(form.get('icon_file'), 'projects/icons');
+  const image = await uploadFile(form.get('image_file'), 'projects/images');
+
+  if (icon) {
+    await deleteMedia(f.existing_icon_file || current.icon_file || '');
+    f.icon_file = icon;
+    f.icon_url = '';
+  } else {
+    f.icon_file = current.icon_file || '';
+  }
+
+  if (image) {
+    await deleteMedia(f.existing_image_url || current.image_url || '');
+    f.image_url = image;
+  } else if (f.image_url && isRemote(f.image_url)) {
+    await deleteMedia(current.image_url || '');
+  } else {
+    f.image_url = current.image_url || '';
+  }
+
+  delete f.id;
+  delete f.existing_icon_file;
+  delete f.existing_image_url;
+  delete f.image_file;
+
+  await saveRow('projects', id, f);
+  return json({ok:true});
+}
+
 async function main(request) {
   await readySchema();
   const url=new URL(request.url); let path=url.pathname.replace(/\/+$/,'');
@@ -201,10 +245,10 @@ async function main(request) {
   const entity=path.match(/^\/admin\/(skills|projects|experiences|certificates|education)(?:\/(\d+))?$/);
   if(entity){
     const table=entity[1], id=entity[2] ? Number(entity[2]) : null;
-    if(method==='DELETE'){requireAuth(request); const [[row]]=await db.query(`SELECT * FROM \`${table}\` WHERE id=? LIMIT 1`,[id]); if(!row)return json({error:'Entry not found.'},404); for(const field of ['icon_file','logo_image','certificate_image','project_file']) if(row[field]) await deleteMedia(row[field]); await db.query(`DELETE FROM \`${table}\` WHERE id=?`,[id]); return json({ok:true});}
+    if(method==='DELETE'){requireAuth(request); const [[row]]=await db.query(`SELECT * FROM \`${table}\` WHERE id=? LIMIT 1`,[id]); if(!row)return json({error:'Entry not found.'},404); for(const field of ['icon_file','logo_image','certificate_image','project_file','image_url']) if(row[field]) await deleteMedia(row[field]); await db.query(`DELETE FROM \`${table}\` WHERE id=?`,[id]); return json({ok:true});}
     if(method==='POST'){
       if(table==='skills') return handleEntity(request,table,'icon_file','skills','title');
-      if(table==='projects') return handleEntity(request,table,'icon_file','projects','title');
+      if(table==='projects') return handleProject(request);
       if(table==='experiences') return handleEntity(request,table,'logo_image','experiences','title');
       if(table==='certificates') return handleEntity(request,table,'certificate_image','certificates','title');
       if(table==='education') return handleEntity(request,table,'logo_image','education','institution');

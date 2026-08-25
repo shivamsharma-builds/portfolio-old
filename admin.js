@@ -194,7 +194,7 @@ async function compressImageFile(file, options = {}) {
 }
 
 async function prepareImageFiles(formData) {
-  const names = ['profile_image','hero_image','icon_file','certificate_image'];
+  const names = ['profile_image','hero_image','icon_file','image_file','certificate_image'];
   for (const name of names) {
     const file = formData.get(name);
     if (file instanceof File && file.size > 0 && file.type.startsWith('image/')) {
@@ -219,6 +219,24 @@ function bindImageInputPreviews() {
     });
   }
 }
+
+document.addEventListener('change', event => {
+  const input = event.target.closest('input[type="file"]');
+  if (!input || !input.name) return;
+  if (!['icon_file','image_file','certificate_image','logo_image'].includes(input.name)) return;
+  const box = input.closest('.filebox');
+  if (!box) return;
+  const file = input.files?.[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file);
+  let preview = box.querySelector('.upload-preview');
+  if (!preview) {
+    preview = document.createElement('div');
+    preview.className = 'preview upload-preview';
+    box.appendChild(preview);
+  }
+  preview.innerHTML = `<img src="${url}" alt="Selected image preview"><span class="small">Ready to upload: ${esc(file.name)}</span>`;
+});
 
 async function formDataWithLockedFields(form) {
   const locked = $$('input,textarea,select', form).map(field => ({field, disabled: field.disabled}));
@@ -281,6 +299,9 @@ async function saveSkillOnly(form) {
 async function saveProjectOnly(form) {
   const formData = await formDataWithLockedFields(form);
   formData.set('id', form.dataset.id);
+  const current = (data.projects || []).find(item => String(item.id) === String(form.dataset.id));
+  formData.set('existing_icon_file', current?.icon_file || '');
+  formData.set('existing_image_url', current?.image_url || '');
   await api('/api/admin/projects', {method:'POST', body:formData});
 }
 
@@ -410,8 +431,12 @@ function renderProjects() {
             <input name="project_url" value="${esc(project.project_url || '')}" placeholder="https://example.com/project">
           </div>
           <div>
-            <label>Project Image URL</label>
-            <input name="image_url" value="${esc(project.image_url || '')}" placeholder="https://example.com/image.png">
+            <label>Project Image</label>
+            <div class="filebox">
+              <input name="image_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+              <input name="image_url" value="${esc(project.image_url || '')}" placeholder="Or paste image URL" style="margin-top:8px">
+              ${project.image_url ? `<div class="preview"><img src="${esc(asset(project.image_url))}" alt="Current project image"><span class="small">Current project image</span></div>` : ''}
+            </div>
           </div>
           <div>
             <label>GitHub URL <span class="muted small">(optional)</span></label>
@@ -440,6 +465,9 @@ function renderProjects() {
       try {
         const formData = await formDataWithLockedFields(form);
         formData.set('id', form.dataset.id);
+        const current = projects.find(item => String(item.id) === String(form.dataset.id));
+        formData.set('existing_icon_file', current?.icon_file || '');
+        formData.set('existing_image_url', current?.image_url || '');
         await api('/api/admin/projects', {method:'POST', body:formData});
         setStatus(status, 'Project saved successfully.', true);
         await load();
