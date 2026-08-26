@@ -714,6 +714,9 @@ async function loadPortfolioData() {
     }
   }
 
+
+//project section 
+/*
   const projects = document.getElementById('projects-list');
   if (projects) {
     const items = Array.isArray(data.projects) ? data.projects : [];
@@ -730,6 +733,29 @@ async function loadPortfolioData() {
         `).join('')
       : '<p class="data-empty">No projects have been added yet.</p>';
   }
+*/
+
+const projects = document.getElementById('projects-list');
+if (projects) {
+  const items = Array.isArray(data.projects) ? data.projects : [];
+  projects.innerHTML = items.length
+    ? items.map(x => `
+        <article class="project-box">
+          <img src="${escapeHtml(x.icon_file || 'public/icons/js.png')}" alt="${escapeHtml(x.title || 'Project')}">
+          <div class="project-text">
+            <h2>${escapeHtml(x.title || '')}</h2>
+            <p>${escapeHtml(x.description || '')}</p>
+
+            <div class="project-actions">
+              ${x.project_url ? `<a class="button-link" href="${escapeHtml(x.project_url)}" target="_blank" rel="noopener noreferrer">View Project</a>` : ''}
+              ${x.github_url ? `<a class="button-link github-button" href="${escapeHtml(x.github_url)}" target="_blank" rel="noopener noreferrer">GitHub</a>` : ''}
+            </div>
+
+          </div>
+        </article>
+      `).join('')
+    : '<p class="data-empty">No projects have been added yet.</p>';
+}
 
   const experience = document.getElementById('experience-list');
   if (experience) {
