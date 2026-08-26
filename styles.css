@@ -2247,6 +2247,20 @@ footer[id] {
     }
 }
 
+/* Project links are rendered as separate action buttons. */
+.project-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
+.project-actions .button-link {
+    margin: 0;
+    min-width: 120px;
+    text-align: center;
+}
+
 /* Frontend action links use consistent button styling. */
 .project-text .button-link,
 .buttons .button-link {
