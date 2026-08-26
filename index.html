@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +23,10 @@
         <div class="line line-2"></div>
         <div class="line line-3"></div>
       </div>
-      <div class="btns"><div class="btn btn-1"></div><div class="btn btn-2"></div></div>
+      <div class="btns">
+        <div class="btn btn-1"></div>
+        <div class="btn btn-2"></div>
+      </div>
     </div>
   </div>
 
@@ -48,13 +52,14 @@
             </p>
             <div class="buttons">
               <a class="button-link" href="#projects">View My Work</a>
-              <a class="button-link" href="./public/resume/resume.pdf" target="_blank" rel="noopener noreferrer">Download Resume</a>
+              <a class="button-link" href="./public/resume/resume.pdf" target="_blank"
+                rel="noopener noreferrer">Download Resume</a>
               <a class="button-link" href="#contact">Let's Connect</a>
             </div>
           </div>
 
           <div class="profile-img">
-            <img src="./src/assets/images/profile.jpg" alt="Portrait of Shivam Sharma">
+            <img id="profile-image" src="./src/assets/images/profile.jpg" alt="Portrait of Shivam Sharma">
           </div>
         </div>
       </section>
@@ -62,9 +67,15 @@
       <hr>
       <div data-component="About"></div>
       <hr>
+      <div data-component="Education"></div>
+      <hr>
+      <div data-component="Experience"></div>
+      <hr>
       <div data-component="Skills"></div>
       <hr>
       <div data-component="Projects"></div>
+      <hr>
+      <div data-component="Certificates"></div>
     </main>
 
     <div data-component="Contact"></div>
@@ -74,4 +85,5 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="./script.js"></script>
 </body>
+
 </html>

@@ -1,0 +1,18 @@
+{
+  "name": "shivam-portfolio-admin",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.11.5",
+    "@netlify/blobs": "^11.0.1"
+  }
+}
