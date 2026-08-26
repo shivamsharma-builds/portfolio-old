@@ -1,4 +1,4 @@
-let data = {site:{}, skills:[], projects:[], experiences:[], certificates:[]};
+let data = { site: {}, skills: [], projects: [], experiences: [], certificates: [] };
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -44,7 +44,7 @@ function asset(value) {
 
 function esc(value = '') {
   return String(value).replace(/[&<>"']/g, char => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
   }[char]));
 }
 
@@ -69,7 +69,7 @@ $('#loginForm')?.addEventListener('submit', async event => {
     const form = new FormData(event.currentTarget);
     await api('/api/login', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Object.fromEntries(form))
     });
     window.location.replace('/admin.html');
@@ -82,8 +82,8 @@ $('#loginForm')?.addEventListener('submit', async event => {
 });
 
 $('#logout')?.addEventListener('click', async () => {
-  try { await api('/api/logout', {method:'POST'}); }
-  catch (_) {}
+  try { await api('/api/logout', { method: 'POST' }); }
+  catch (_) { }
   showLogin();
   $('#loginForm')?.reset();
 });
@@ -175,7 +175,7 @@ async function compressImageFile(file, options = {}) {
   const height = Math.max(1, Math.round(bitmap.height * scale));
   const canvas = document.createElement('canvas');
   canvas.width = width; canvas.height = height;
-  const ctx = canvas.getContext('2d', {alpha: true});
+  const ctx = canvas.getContext('2d', { alpha: true });
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(bitmap, 0, 0, width, height);
@@ -187,11 +187,11 @@ async function compressImageFile(file, options = {}) {
   if (!blob || blob.size >= file.size) return file;
   const ext = mime === 'image/png' ? '.png' : '.webp';
   const base = file.name.replace(/\.[^.]+$/, '') || 'image';
-  return new File([blob], `${base}${ext}`, {type:mime, lastModified:Date.now()});
+  return new File([blob], `${base}${ext}`, { type: mime, lastModified: Date.now() });
 }
 
 async function prepareImageFiles(formData) {
-  const names = ['profile_image','hero_image','icon_file','image_file','certificate_image'];
+  const names = ['profile_image', 'hero_image', 'icon_file', 'image_file', 'certificate_image'];
   for (const name of names) {
     const file = formData.get(name);
     if (file instanceof File && file.size > 0 && file.type.startsWith('image/')) {
@@ -202,8 +202,8 @@ async function prepareImageFiles(formData) {
 }
 
 function bindImageInputPreviews() {
-  const pairs = [['profile_image','#profilePreview'],['hero_image','#heroPreview']];
-  for (const [name,target] of pairs) {
+  const pairs = [['profile_image', '#profilePreview'], ['hero_image', '#heroPreview']];
+  for (const [name, target] of pairs) {
     const input = document.querySelector(`input[name="${name}"]`);
     const box = document.querySelector(target);
     if (!input || !box || input.dataset.previewReady === '1') continue;
@@ -220,7 +220,7 @@ function bindImageInputPreviews() {
 document.addEventListener('change', event => {
   const input = event.target.closest('input[type="file"]');
   if (!input || !input.name) return;
-  if (!['icon_file','image_file','certificate_image','logo_image'].includes(input.name)) return;
+  if (!['icon_file', 'image_file', 'certificate_image', 'logo_image'].includes(input.name)) return;
   const box = input.closest('.filebox');
   if (!box) return;
   const file = input.files?.[0];
@@ -236,7 +236,7 @@ document.addEventListener('change', event => {
 });
 
 async function formDataWithLockedFields(form) {
-  const locked = $$('input,textarea,select', form).map(field => ({field, disabled: field.disabled}));
+  const locked = $$('input,textarea,select', form).map(field => ({ field, disabled: field.disabled }));
   locked.forEach(x => { if (x.field.disabled) x.field.disabled = false; });
   const fd = new FormData(form);
   locked.forEach(x => { x.field.disabled = x.disabled; });
@@ -275,14 +275,14 @@ document.addEventListener('click', async (event) => {
   if (!button) return;
   if (!confirm('Delete this previously uploaded image?')) return;
   button.disabled = true;
-  try { await api(`/api/admin/site-image/${encodeURIComponent(button.dataset.field)}`, {method:'DELETE'}); await load(); }
+  try { await api(`/api/admin/site-image/${encodeURIComponent(button.dataset.field)}`, { method: 'DELETE' }); await load(); }
   catch (error) { alert(error.message); button.disabled = false; }
 });
 
 async function saveSiteOnly() {
   const form = $('#siteForm');
   if (!form) return;
-  await api('/api/admin/site', {method:'POST', body:await formDataWithLockedFields(form)});
+  await api('/api/admin/site', { method: 'POST', body: await formDataWithLockedFields(form) });
 }
 
 async function saveSkillOnly(form) {
@@ -290,7 +290,7 @@ async function saveSkillOnly(form) {
   const formData = await formDataWithLockedFields(form);
   formData.set('id', form.dataset.id);
   formData.set('existing_icon_file', skills.find(item => String(item.id) === String(form.dataset.id))?.icon_file || '');
-  await api('/api/admin/skills', {method:'POST', body:formData});
+  await api('/api/admin/skills', { method: 'POST', body: formData });
 }
 
 async function saveProjectOnly(form) {
@@ -299,7 +299,7 @@ async function saveProjectOnly(form) {
   const current = (data.projects || []).find(item => String(item.id) === String(form.dataset.id));
   formData.set('existing_icon_file', current?.icon_file || '');
   formData.set('existing_image_url', current?.image_url || '');
-  await api('/api/admin/projects', {method:'POST', body:formData});
+  await api('/api/admin/projects', { method: 'POST', body: formData });
 }
 
 async function saveAllData() {
@@ -371,7 +371,7 @@ function renderSkills() {
         formData.set('id', form.dataset.id);
         formData.set('existing_icon_file',
           skills.find(item => String(item.id) === String(form.dataset.id))?.icon_file || '');
-        await api('/api/admin/skills', {method:'POST', body:formData});
+        await api('/api/admin/skills', { method: 'POST', body: formData });
         setStatus(status, 'Skill saved successfully.', true);
         await load();
       } catch (error) {
@@ -388,7 +388,7 @@ function renderSkills() {
       if (!confirm('Delete this skill?')) return;
       button.disabled = true;
       try {
-        await api(`/api/admin/skills/${encodeURIComponent(button.dataset.id)}`, {method:'DELETE'});
+        await api(`/api/admin/skills/${encodeURIComponent(button.dataset.id)}`, { method: 'DELETE' });
         await load();
       } catch (error) {
         alert(error.message);
@@ -465,7 +465,7 @@ function renderProjects() {
         const current = projects.find(item => String(item.id) === String(form.dataset.id));
         formData.set('existing_icon_file', current?.icon_file || '');
         formData.set('existing_image_url', current?.image_url || '');
-        await api('/api/admin/projects', {method:'POST', body:formData});
+        await api('/api/admin/projects', { method: 'POST', body: formData });
         setStatus(status, 'Project saved successfully.', true);
         await load();
       } catch (error) {
@@ -482,7 +482,7 @@ function renderProjects() {
       if (!confirm('Delete this project?')) return;
       button.disabled = true;
       try {
-        await api(`/api/admin/projects/${encodeURIComponent(button.dataset.id)}`, {method:'DELETE'});
+        await api(`/api/admin/projects/${encodeURIComponent(button.dataset.id)}`, { method: 'DELETE' });
         await load();
       } catch (error) {
         alert(error.message);
@@ -492,30 +492,30 @@ function renderProjects() {
   });
 }
 
-async function saveExperienceOnly(form) { 
-  const fd = await formDataWithLockedFields(form); 
-  fd.set('id', form.dataset.id || ''); 
-  await api('/api/admin/experiences', {method:'POST', body:fd}); 
+async function saveExperienceOnly(form) {
+  const fd = await formDataWithLockedFields(form);
+  fd.set('id', form.dataset.id || '');
+  await api('/api/admin/experiences', { method: 'POST', body: fd });
 }
 
-async function saveCertificateOnly(form) { 
-  const fd = await formDataWithLockedFields(form); 
-  fd.set('id', form.dataset.id || ''); 
-  fd.set('existing_certificate_image', data.certificates.find(x => String(x.id) === String(form.dataset.id))?.certificate_image || ''); 
-  await api('/api/admin/certificates', {method:'POST', body:fd}); 
+async function saveCertificateOnly(form) {
+  const fd = await formDataWithLockedFields(form);
+  fd.set('id', form.dataset.id || '');
+  fd.set('existing_certificate_image', data.certificates.find(x => String(x.id) === String(form.dataset.id))?.certificate_image || '');
+  await api('/api/admin/certificates', { method: 'POST', body: fd });
 }
 
-async function saveEducationOnly(form) { 
-  const fd = await formDataWithLockedFields(form); 
-  fd.set('id', form.dataset.id || ''); 
-  fd.set('existing_logo_image', data.education.find(x => String(x.id) === String(form.dataset.id))?.logo_image || ''); 
-  await api('/api/admin/education', {method:'POST', body:fd}); 
+async function saveEducationOnly(form) {
+  const fd = await formDataWithLockedFields(form);
+  fd.set('id', form.dataset.id || '');
+  fd.set('existing_logo_image', data.education.find(x => String(x.id) === String(form.dataset.id))?.logo_image || '');
+  await api('/api/admin/education', { method: 'POST', body: fd });
 }
 
-function renderExperiences() { 
-  const c = $('#experiences'); 
-  if (!c) return; 
-  const items = data.experiences || []; 
+function renderExperiences() {
+  const c = $('#experiences');
+  if (!c) return;
+  const items = data.experiences || [];
   c.innerHTML = items.length ? items.map(x => `
     <div class="item">
       <form class="experienceForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
@@ -544,9 +544,9 @@ function renderExperiences() {
         <p class="status experienceStatus"></p>
       </form>
     </div>
-  `).join('') : '<p class="muted">No experience entries yet.</p>'; 
-  
-  decorateLocks(c); 
+  `).join('') : '<p class="muted">No experience entries yet.</p>';
+
+  decorateLocks(c);
   $$('.experienceForm', c).forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     try {
@@ -556,22 +556,22 @@ function renderExperiences() {
     } catch (err) {
       setStatus($('.experienceStatus', f), err.message);
     }
-  })); 
+  }));
   $$('.delExperience', c).forEach(b => b.addEventListener('click', async () => {
     if (!confirm('Delete this experience?')) return;
     try {
-      await api(`/api/admin/experiences/${b.dataset.id}`, {method:'DELETE'});
+      await api(`/api/admin/experiences/${b.dataset.id}`, { method: 'DELETE' });
       await load();
     } catch (e) {
       alert(e.message);
     }
-  })); 
+  }));
 }
 
-function renderCertificates() { 
-  const c = $('#certificates'); 
-  if (!c) return; 
-  const items = data.certificates || []; 
+function renderCertificates() {
+  const c = $('#certificates');
+  if (!c) return;
+  const items = data.certificates || [];
   c.innerHTML = items.length ? items.map(x => `
     <div class="item">
       <form class="certificateForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
@@ -596,9 +596,9 @@ function renderCertificates() {
         <p class="status certificateStatus"></p>
       </form>
     </div>
-  `).join('') : '<p class="muted">No certificates yet.</p>'; 
-  
-  decorateLocks(c); 
+  `).join('') : '<p class="muted">No certificates yet.</p>';
+
+  decorateLocks(c);
   $$('.certificateForm', c).forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     try {
@@ -608,22 +608,22 @@ function renderCertificates() {
     } catch (err) {
       setStatus($('.certificateStatus', f), err.message);
     }
-  })); 
+  }));
   $$('.delCertificate', c).forEach(b => b.addEventListener('click', async () => {
     if (!confirm('Delete this certificate?')) return;
     try {
-      await api(`/api/admin/certificates/${b.dataset.id}`, {method:'DELETE'});
+      await api(`/api/admin/certificates/${b.dataset.id}`, { method: 'DELETE' });
       await load();
     } catch (e) {
       alert(e.message);
     }
-  })); 
+  }));
 }
 
-function renderEducation() { 
-  const c = $('#education'); 
-  if (!c) return; 
-  const items = data.education || []; 
+function renderEducation() {
+  const c = $('#education');
+  if (!c) return;
+  const items = data.education || [];
   c.innerHTML = items.length ? items.map(x => `
     <div class="item">
       <form class="educationForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
@@ -654,9 +654,9 @@ function renderEducation() {
         <p class="status educationStatus"></p>
       </form>
     </div>
-  `).join('') : '<p class="muted">No education entries yet.</p>'; 
-  
-  decorateLocks(c); 
+  `).join('') : '<p class="muted">No education entries yet.</p>';
+
+  decorateLocks(c);
   $$('.educationForm', c).forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     try {
@@ -666,16 +666,16 @@ function renderEducation() {
     } catch (err) {
       setStatus($('.educationStatus', f), err.message);
     }
-  })); 
+  }));
   $$('.delEducation', c).forEach(b => b.addEventListener('click', async () => {
     if (!confirm('Delete this education entry?')) return;
     try {
-      await api(`/api/admin/education/${b.dataset.id}`, {method:'DELETE'});
+      await api(`/api/admin/education/${b.dataset.id}`, { method: 'DELETE' });
       await load();
     } catch (e) {
       alert(e.message);
     }
-  })); 
+  }));
 }
 
 async function addEducation() {
@@ -685,7 +685,7 @@ async function addEducation() {
     const fd = new FormData();
     fd.set('institution', 'New Institution');
     fd.set('sort_order', String((data.education?.length || 0) + 1));
-    await api('/api/admin/education', {method:'POST', body:fd});
+    await api('/api/admin/education', { method: 'POST', body: fd });
     await load();
   } catch (e) {
     alert(e.message);
@@ -701,7 +701,7 @@ async function addExperience() {
     const fd = new FormData();
     fd.set('title', 'New Experience');
     fd.set('sort_order', String((data.experiences?.length || 0) + 1));
-    await api('/api/admin/experiences', {method:'POST', body:fd});
+    await api('/api/admin/experiences', { method: 'POST', body: fd });
     await load();
   } catch (e) {
     alert(e.message);
@@ -717,7 +717,7 @@ async function addCertificate() {
     const fd = new FormData();
     fd.set('title', 'New Certificate');
     fd.set('sort_order', String((data.certificates?.length || 0) + 1));
-    await api('/api/admin/certificates', {method:'POST', body:fd});
+    await api('/api/admin/certificates', { method: 'POST', body: fd });
     await load();
   } catch (e) {
     alert(e.message);
@@ -736,7 +736,7 @@ async function addSkill() {
     formData.set('icon_url', '');
     formData.set('icon_file', '');
     formData.set('sort_order', String((data.skills?.length || 0) + 1));
-    await api('/api/admin/skills', {method:'POST', body:formData});
+    await api('/api/admin/skills', { method: 'POST', body: formData });
     await load();
   } catch (error) {
     alert(error.message);
@@ -763,11 +763,11 @@ async function addProject() {
     formData.set('github_url', '');
     formData.set('project_file', '');
     formData.set('sort_order', String((data.projects?.length || 0) + 1));
-    const result = await api('/api/admin/projects', {method:'POST', body:formData});
+    const result = await api('/api/admin/projects', { method: 'POST', body: formData });
     await load();
     // Put the newly created project in view on mobile and desktop.
     const projectsCard = $('#projectsCard');
-    projectsCard?.scrollIntoView({behavior:'smooth', block:'start'});
+    projectsCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (result?.id) {
       const created = document.querySelector(`.projectForm[data-id="${CSS.escape(String(result.id))}"]`);
       created?.querySelector('input[name="title"]')?.focus();
