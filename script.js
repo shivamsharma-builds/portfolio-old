@@ -579,26 +579,226 @@ window.addEventListener(
   }
 );
 async function loadPortfolioData() {
+  const emptyData = {
+    site: {},
+    skills: [],
+    projects: [],
+    experiences: [],
+    certificates: [],
+    education: []
+  };
+
+  let data = emptyData;
+
   try {
-    const response = await fetch('/api/public', { cache: 'no-store' });
-    if (!response.ok) throw new Error('Portfolio API unavailable');
-    const data = await response.json();
-    const s = data.site;
-    const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value||''; };
-    set('hero-name', s.name); set('hero-headline', s.headline); set('intro-title', `Hi, I'm ${s.name}`); window.__PORTFOLIO_TYPED = String(s.hero_typed || '').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-    const intro = document.querySelector('.intro p'); if(intro) intro.textContent=s.intro||'';
-    const resume=document.querySelector('.intro a[href*="resume"]'); if(resume && s.resume_file) resume.href=s.resume_file;
-    const heroVisual=document.querySelector('#hero-visual-image'); if(heroVisual && s.hero_image) heroVisual.src=s.hero_image;
-    const profile=document.querySelector('#profile-image'); if(profile && s.profile_image) profile.src=s.profile_image;
-    set('about-title', s.about_title); set('about-text', s.about_text); set('what-i-do', s.what_i_do); set('goals', s.goals);
-    set('contact-email', s.email); const email=document.getElementById('contact-email'); if(email) email.href=`mailto:${s.email}`;
-    set('contact-github', s.github); const gh=document.getElementById('contact-github'); if(gh) gh.href=s.github;
-    set('contact-location', s.location); set('footer-name', s.name); const footer=document.querySelector('.footer-description'); if(footer) footer.textContent=s.footer_description||footer.textContent;
-    const skills=document.getElementById('skills-list'); if(skills) skills.innerHTML=data.skills.map(x=>`<article class="vertical"><img src="${x.icon_file||'public/icons/html.png'}" class="image-top" alt="${escapeHtml(x.title)}"><h2 class="vertical-text-title">${escapeHtml(x.title)}</h2><p class="vertical-text-desc">${escapeHtml(x.description)}</p></article>`).join('');
-    const projects=document.getElementById('projects-list'); if(projects) projects.innerHTML=data.projects.map(x=>`<article class="project-box"><img src="${x.icon_file||'public/icons/js.png'}" alt="${escapeHtml(x.title)}"><div class="project-text"><h2>${escapeHtml(x.title)}</h2><p>${escapeHtml(x.description)}</p>${(x.github_url||x.project_url)?`<a href="${x.github_url||x.project_url}" target="_blank" rel="noopener noreferrer">GitHub <img src="public/icons/github.png" alt=""></a>`:''}</div></article>`).join('');
-    const experience=document.getElementById('experience-list'); if(experience) experience.innerHTML=(data.experiences||[]).map(x=>`<article class="project-box">${x.logo_image?`<img src="${escapeHtml(x.logo_image)}" alt="${escapeHtml(x.company||'Company')} logo">`:''}<div class="project-text"><h2>${escapeHtml(x.title||x.role||'')}</h2><p><strong>${escapeHtml(x.company||'')}</strong>${x.location?' · '+escapeHtml(x.location):''}</p><p>${escapeHtml(x.duration||'')} ${!x.duration&&x.start_date?escapeHtml(x.start_date)+' '+(x.end_date?'— '+escapeHtml(x.end_date):''):''}</p><p>${escapeHtml(x.description||'')}</p>${x.url?`<a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">View Experience</a>`:''}</div></article>`).join('');
-    const certificates=document.getElementById('certificates-list'); if(certificates) certificates.innerHTML=(data.certificates||[]).map(x=>`<article class="project-box">${x.certificate_image?`<img src="${escapeHtml(x.certificate_image)}" alt="${escapeHtml(x.title)}">`:''}<div class="project-text"><h2>${escapeHtml(x.title||'')}</h2><p><strong>${escapeHtml(x.issuer||'')}</strong>${x.issue_date?' · '+escapeHtml(x.issue_date):''}</p><p>${escapeHtml(x.description||'')}</p>${x.credential_id?`<p><strong>Credential ID:</strong> ${escapeHtml(x.credential_id)}</p>`:''}${x.credential_url?`<a href="${escapeHtml(x.credential_url)}" target="_blank" rel="noopener noreferrer">Verify Certificate</a>`:''}</div></article>`).join('');
-    const education=document.getElementById('education-list'); if(education) education.innerHTML=(data.education||[]).map(x=>`<article class="project-box">${x.logo_image?`<img src="${escapeHtml(x.logo_image)}" alt="${escapeHtml(x.institution||'Institution')} logo">`:''}<div class="project-text"><h2>${escapeHtml(x.institution||'')}</h2><p>${escapeHtml(x.discipline||'')}${x.domain_name?' · '+escapeHtml(x.domain_name):''}</p><p>${x.branch?`Branch: ${escapeHtml(x.branch)}`:''}${x.stream?`${x.branch?' · ':''}Stream: ${escapeHtml(x.stream)}`:''}</p><p>${escapeHtml(x.duration||'')}${!x.duration&&x.start_date?' · '+escapeHtml(x.start_date)+' '+(x.end_date?'— '+escapeHtml(x.end_date):''):''}</p>${x.description?`<p>${escapeHtml(x.description)}</p>`:''}${x.url?`<a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Institution Website</a>`:''}</div></article>`).join('');
-  } catch (error) { console.error(error); }
+    const response = await fetch('/api/public', {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' }
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok) {
+      const message = contentType.includes('application/json')
+        ? ((await response.json()).error || `HTTP ${response.status}`)
+        : `HTTP ${response.status}`;
+      throw new Error(message);
+    }
+
+    data = await response.json();
+
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid portfolio API response.');
+    }
+  } catch (error) {
+    console.error('Unable to load portfolio data from /api/public:', error);
+    showPortfolioLoadError(error);
+    return;
+  }
+
+  const s = data.site && typeof data.site === 'object' ? data.site : {};
+
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el && value !== undefined && value !== null) el.textContent = value;
+  };
+
+  set('hero-name', s.name);
+  set('hero-headline', s.headline);
+  set('intro-title', `Hi, I'm ${s.name || 'there'}`);
+  window.__PORTFOLIO_TYPED = String(s.hero_typed || '')
+    .split(/\r?\n/)
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  const intro = document.querySelector('.intro p');
+  if (intro && s.intro) intro.textContent = s.intro;
+
+  const resume = document.querySelector('.intro a[href*="resume"]');
+  if (resume && s.resume_file) resume.href = s.resume_file;
+
+  const heroVisual = document.querySelector('#hero-visual-image');
+  if (heroVisual && s.hero_image) heroVisual.src = s.hero_image;
+
+  const profile = document.querySelector('#profile-image');
+  if (profile && s.profile_image) profile.src = s.profile_image;
+
+  set('about-title', s.about_title);
+  set('about-text', s.about_text);
+  set('what-i-do', s.what_i_do);
+  set('goals', s.goals);
+
+  const contactEmail = document.getElementById('contact-email');
+  if (contactEmail) {
+    contactEmail.textContent = s.email || '';
+    if (s.email) {
+      contactEmail.href = `mailto:${s.email}`;
+      contactEmail.classList.add('button-link');
+    }
+  }
+
+  const contactGithub = document.getElementById('contact-github');
+  if (contactGithub) {
+    contactGithub.textContent = s.github || '';
+    if (s.github) {
+      contactGithub.href = s.github;
+      contactGithub.target = '_blank';
+      contactGithub.rel = 'noopener noreferrer';
+      contactGithub.classList.add('button-link');
+    }
+  }
+
+  set('contact-location', s.location);
+  set('footer-name', s.name);
+
+  const footer = document.querySelector('.footer-description');
+  if (footer && s.footer_description) footer.textContent = s.footer_description;
+
+  const skills = document.getElementById('skills-list');
+  if (skills) {
+    const items = Array.isArray(data.skills) ? data.skills : [];
+    if (!items.length) {
+      skills.innerHTML = '<p class="data-empty">No skills have been added yet.</p>';
+    } else {
+      const groups = items.reduce((map, skill) => {
+        const category = String(skill.category || 'Other').trim() || 'Other';
+        (map[category] ||= []).push(skill);
+        return map;
+      }, {});
+
+      const categoryOrder = [
+        'Languages', 'Web Development', 'Frameworks', 'Libraries',
+        'Databases', 'AI & ML', 'Tools', 'Cloud & DevOps', 'Testing',
+        'Mobile Development', 'Modules', 'IDEs & Editors',
+        'Operating Systems', 'Other'
+      ];
+
+      const orderedGroups = Object.entries(groups).sort(([a], [b]) => {
+        const ai = categoryOrder.indexOf(a);
+        const bi = categoryOrder.indexOf(b);
+        return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+      });
+
+      skills.innerHTML = orderedGroups.map(([category, groupItems]) => `
+        <section class="skill-category" aria-labelledby="skill-category-${escapeHtml(category).replace(/[^a-z0-9]+/gi, '-')}">
+          <h2 class="skill-category-title" id="skill-category-${escapeHtml(category).replace(/[^a-z0-9]+/gi, '-')}">${escapeHtml(category)}</h2>
+          <div class="skill-category-grid">
+            ${groupItems.map(x => `
+              <article class="vertical">
+                <img src="${escapeHtml(x.icon_file || 'public/icons/html.png')}" class="image-top" alt="${escapeHtml(x.title || 'Skill')}">
+                <h3 class="vertical-text-title">${escapeHtml(x.title || '')}</h3>
+              </article>
+            `).join('')}
+          </div>
+        </section>
+      `).join('');
+    }
+  }
+
+  const projects = document.getElementById('projects-list');
+  if (projects) {
+    const items = Array.isArray(data.projects) ? data.projects : [];
+    projects.innerHTML = items.length
+      ? items.map(x => `
+          <article class="project-box">
+            <img src="${escapeHtml(x.icon_file || 'public/icons/js.png')}" alt="${escapeHtml(x.title || 'Project')}">
+            <div class="project-text">
+              <h2>${escapeHtml(x.title || '')}</h2>
+              <p>${escapeHtml(x.description || '')}</p>
+              ${(x.github_url || x.project_url) ? `<a class="button-link" href="${escapeHtml(x.github_url || x.project_url)}" target="_blank" rel="noopener noreferrer">View Project</a>` : ''}
+            </div>
+          </article>
+        `).join('')
+      : '<p class="data-empty">No projects have been added yet.</p>';
+  }
+
+  const experience = document.getElementById('experience-list');
+  if (experience) {
+    const items = Array.isArray(data.experiences) ? data.experiences : [];
+    experience.innerHTML = items.length
+      ? items.map(x => `
+          <article class="project-box">
+            ${x.logo_image ? `<img src="${escapeHtml(x.logo_image)}" alt="${escapeHtml(x.company || 'Company')} logo">` : ''}
+            <div class="project-text">
+              <h2>${escapeHtml(x.title || x.role || '')}</h2>
+              <p><strong>${escapeHtml(x.company || '')}</strong>${x.location ? ' · ' + escapeHtml(x.location) : ''}</p>
+              <p>${escapeHtml(x.duration || '')}${!x.duration && x.start_date ? escapeHtml(x.start_date) + ' ' + (x.end_date ? '— ' + escapeHtml(x.end_date) : '') : ''}</p>
+              <p>${escapeHtml(x.description || '')}</p>
+              <div class="buttons">
+                ${x.url ? `<a class="button-link" href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">View Experience</a>` : ''}
+                ${(x.offer_letter_file || x.offer_letter_url) ? `<a class="button-link" href="${escapeHtml(x.offer_letter_file || x.offer_letter_url)}" target="_blank" rel="noopener noreferrer">View Offer Letter</a>` : ''}
+              </div>
+            </div>
+          </article>
+        `).join('')
+      : '<p class="data-empty">No experience has been added yet.</p>';
+  }
+
+  const certificates = document.getElementById('certificates-list');
+  if (certificates) {
+    const items = Array.isArray(data.certificates) ? data.certificates : [];
+    certificates.innerHTML = items.length
+      ? items.map(x => `
+          <article class="project-box">
+            ${x.certificate_image ? `<img src="${escapeHtml(x.certificate_image)}" alt="${escapeHtml(x.title || 'Certificate')}">` : ''}
+            <div class="project-text">
+              <h2>${escapeHtml(x.title || '')}</h2>
+              <p><strong>${escapeHtml(x.issuer || '')}</strong>${x.issue_date ? ' · ' + escapeHtml(x.issue_date) : ''}</p>
+              <p>${escapeHtml(x.description || '')}</p>
+              ${x.credential_id ? `<p><strong>Credential ID:</strong> ${escapeHtml(x.credential_id)}</p>` : ''}
+              ${x.credential_url ? `<a class="button-link" href="${escapeHtml(x.credential_url)}" target="_blank" rel="noopener noreferrer">Verify Certificate</a>` : ''}
+            </div>
+          </article>
+        `).join('')
+      : '<p class="data-empty">No certificates have been added yet.</p>';
+  }
+
+  const education = document.getElementById('education-list');
+  if (education) {
+    const items = Array.isArray(data.education) ? data.education : [];
+    education.innerHTML = items.length
+      ? items.map(x => `
+          <article class="project-box">
+            ${x.logo_image ? `<img src="${escapeHtml(x.logo_image)}" alt="${escapeHtml(x.institution || 'Institution')} logo">` : ''}
+            <div class="project-text">
+              <h2>${escapeHtml(x.institution || '')}</h2>
+              <p>${escapeHtml(x.discipline || '')}${x.domain_name ? ' · ' + escapeHtml(x.domain_name) : ''}</p>
+              <p>${x.branch ? `Branch: ${escapeHtml(x.branch)}` : ''}${x.stream ? `${x.branch ? ' · ' : ''}Stream: ${escapeHtml(x.stream)}` : ''}</p>
+              <p>${escapeHtml(x.duration || '')}${!x.duration && x.start_date ? ' · ' + escapeHtml(x.start_date) + ' ' + (x.end_date ? '— ' + escapeHtml(x.end_date) : '') : ''}</p>
+              ${x.description ? `<p>${escapeHtml(x.description)}</p>` : ''}
+              ${x.url ? `<a class="button-link" href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Institution Website</a>` : ''}
+            </div>
+          </article>
+        `).join('')
+      : '<p class="data-empty">No education records have been added yet.</p>';
+  }
 }
-function escapeHtml(value=''){return String(value).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+
+function showPortfolioLoadError(error) {
+  const message = document.createElement('div');
+  message.className = 'portfolio-data-error';
+  message.setAttribute('role', 'alert');
+  message.textContent = `Portfolio data could not be loaded: ${error?.message || 'Unknown error'}`;
+  document.querySelector('main')?.prepend(message);
+}
+
+function escapeHtml(value = '') { return String(value).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }

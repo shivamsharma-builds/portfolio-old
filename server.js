@@ -55,7 +55,8 @@ function auth(req, res, next) {
   if (!req.session.adminId) return res.status(401).json({ error: 'Unauthorized' });
   next();
 }
-function fileUrl(file) { return file ? `/uploads/${file}` : ''; }
+function isRemote(value) { return /^https?:\/\//i.test(String(value || '')); }
+function fileUrl(file) { return file ? (isRemote(file) ? file : `/uploads/${path.basename(file)}`) : ''; }
 function cleanFileName(value) { return value ? path.basename(value) : null; }
 
 async function tableColumns(table) {
@@ -87,29 +88,40 @@ async function ensureSchemaCompatibility() {
   // Keep old Aiven data. Add only safe, nullable/has-default columns that the current
   // portfolio UI understands. Legacy required columns are handled dynamically below.
   const site = [
-    ['name','VARCHAR(255) NULL'], ['headline','VARCHAR(255) NULL'], ['intro','LONGTEXT NULL'],
-    ['about_title','VARCHAR(255) NULL'], ['about_text','LONGTEXT NULL'], ['what_i_do','LONGTEXT NULL'],
-    ['goals','LONGTEXT NULL'], ['email','VARCHAR(255) NULL'], ['github','VARCHAR(500) NULL'],
-    ['location','VARCHAR(255) NULL'], ['profile_image','VARCHAR(500) NULL'], ['resume_file','VARCHAR(500) NULL'],
-    ['profile_image_url','VARCHAR(1000) NULL'], ['resume_url','VARCHAR(1000) NULL'],
-    ['hero_typed','TEXT NULL'], ['hero_image','VARCHAR(1000) NULL'], ['about_image','VARCHAR(1000) NULL'], ['footer_description','LONGTEXT NULL']
+    ['name', 'VARCHAR(255) NULL'], ['headline', 'VARCHAR(255) NULL'], ['intro', 'LONGTEXT NULL'],
+    ['about_title', 'VARCHAR(255) NULL'], ['about_text', 'LONGTEXT NULL'], ['what_i_do', 'LONGTEXT NULL'],
+    ['goals', 'LONGTEXT NULL'], ['email', 'VARCHAR(255) NULL'], ['github', 'VARCHAR(500) NULL'],
+    ['location', 'VARCHAR(255) NULL'], ['profile_image', 'VARCHAR(500) NULL'], ['resume_file', 'VARCHAR(500) NULL'],
+    ['profile_image_url', 'VARCHAR(1000) NULL'], ['resume_url', 'VARCHAR(1000) NULL'],
+    ['hero_typed', 'TEXT NULL'], ['hero_image', 'VARCHAR(1000) NULL'], ['about_image', 'VARCHAR(1000) NULL'], ['footer_description', 'LONGTEXT NULL']
   ];
   const skills = [
-    ['title','VARCHAR(255) NULL'], ['description','TEXT NULL'], ['icon_file','VARCHAR(500) NULL'],
-    ['icon_url','VARCHAR(1000) NULL'], ['sort_order','INT DEFAULT 0']
+    ['category', 'VARCHAR(100) NOT NULL DEFAULT \'Other\''], ['title', 'VARCHAR(255) NULL'], ['description', 'TEXT NULL'], ['icon_file', 'VARCHAR(500) NULL'],
+    ['icon_url', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']
   ];
   const projects = [
-    ['title','VARCHAR(255) NULL'], ['description','TEXT NULL'], ['icon_file','VARCHAR(500) NULL'],
-    ['image_url','VARCHAR(1000) NULL'], ['project_file','VARCHAR(500) NULL'],
-    ['project_url','VARCHAR(1000) NULL'], ['github_url','VARCHAR(1000) NULL'], ['sort_order','INT DEFAULT 0']
+    ['title', 'VARCHAR(255) NULL'], ['description', 'TEXT NULL'], ['icon_file', 'VARCHAR(500) NULL'],
+    ['image_url', 'VARCHAR(1000) NULL'], ['project_file', 'VARCHAR(500) NULL'],
+    ['project_url', 'VARCHAR(1000) NULL'], ['github_url', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']
   ];
-  for (const [c,d] of site) await ensureColumn('site_content', c, d);
-  for (const [c,d] of skills) await ensureColumn('skills', c, d);
-  for (const [c,d] of projects) await ensureColumn('projects', c, d);
-  for (const [c,d] of [['role','VARCHAR(255) NULL'],['title','VARCHAR(255) NULL'],['company','VARCHAR(255) NULL'],['logo_image','VARCHAR(500) NULL'],['description','LONGTEXT NULL'],['start_date','VARCHAR(100) NULL'],['end_date','VARCHAR(100) NULL'],['duration','VARCHAR(150) NULL'],['location','VARCHAR(255) NULL'],['url','VARCHAR(1000) NULL'],['sort_order','INT DEFAULT 0']]) await ensureColumn('experiences', c, d);
-  for (const [c,d] of [['title','VARCHAR(255) NULL'],['issuer','VARCHAR(255) NULL'],['description','LONGTEXT NULL'],['issue_date','VARCHAR(100) NULL'],['credential_id','VARCHAR(255) NULL'],['credential_url','VARCHAR(1000) NULL'],['certificate_image','VARCHAR(500) NULL'],['sort_order','INT DEFAULT 0']]) await ensureColumn('certificates', c, d);
+  for (const [c, d] of site) await ensureColumn('site_content', c, d);
+  for (const [c, d] of skills) await ensureColumn('skills', c, d);
+  await pool.query(`UPDATE skills SET category = CASE
+    WHEN LOWER(title) IN ('c','c++','cpp','java','python','javascript','typescript','php','go','rust','kotlin','swift') THEN 'Languages'
+    WHEN LOWER(title) LIKE '%html%' OR LOWER(title) LIKE '%css%' OR LOWER(title) LIKE '%web%' THEN 'Web Development'
+    WHEN LOWER(title) LIKE '%react%' OR LOWER(title) LIKE '%node%' OR LOWER(title) LIKE '%express%' OR LOWER(title) LIKE '%next%' OR LOWER(title) LIKE '%django%' OR LOWER(title) LIKE '%spring%' OR LOWER(title) LIKE '%angular%' OR LOWER(title) LIKE '%vue%' THEN 'Frameworks'
+    WHEN LOWER(title) LIKE '%tensorflow%' OR LOWER(title) LIKE '%pytorch%' OR LOWER(title) LIKE '%scikit%' OR LOWER(title) LIKE '%keras%' OR LOWER(title) LIKE '%machine learning%' OR LOWER(title) LIKE '%deep learning%' OR LOWER(title) LIKE '%artificial intelligence%' THEN 'AI & ML'
+    WHEN LOWER(title) LIKE '%sql%' OR LOWER(title) LIKE '%mysql%' OR LOWER(title) LIKE '%postgres%' OR LOWER(title) LIKE '%mongodb%' OR LOWER(title) LIKE '%database%' THEN 'Databases'
+    WHEN LOWER(title) LIKE '%git%' OR LOWER(title) LIKE '%docker%' OR LOWER(title) LIKE '%linux%' OR LOWER(title) LIKE '%aws%' OR LOWER(title) LIKE '%netlify%' OR LOWER(title) LIKE '%postman%' THEN 'Tools'
+    WHEN LOWER(title) LIKE '%numpy%' OR LOWER(title) LIKE '%pandas%' OR LOWER(title) LIKE '%matplotlib%' OR LOWER(title) LIKE '%library%' THEN 'Libraries'
+    ELSE COALESCE(NULLIF(TRIM(category), ''), 'Other')
+  END
+  WHERE category='Other' OR category IS NULL OR TRIM(category)='';`);
+  for (const [c, d] of projects) await ensureColumn('projects', c, d);
+  for (const [c, d] of [['role', 'VARCHAR(255) NULL'], ['title', 'VARCHAR(255) NULL'], ['company', 'VARCHAR(255) NULL'], ['logo_image', 'VARCHAR(500) NULL'], ['description', 'LONGTEXT NULL'], ['start_date', 'VARCHAR(100) NULL'], ['end_date', 'VARCHAR(100) NULL'], ['duration', 'VARCHAR(150) NULL'], ['location', 'VARCHAR(255) NULL'], ['url', 'VARCHAR(1000) NULL'], ['offer_letter_url', 'VARCHAR(1000) NULL'], ['offer_letter_file', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('experiences', c, d);
+  for (const [c, d] of [['title', 'VARCHAR(255) NULL'], ['issuer', 'VARCHAR(255) NULL'], ['description', 'LONGTEXT NULL'], ['issue_date', 'VARCHAR(100) NULL'], ['credential_id', 'VARCHAR(255) NULL'], ['credential_url', 'VARCHAR(1000) NULL'], ['certificate_image', 'VARCHAR(500) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('certificates', c, d);
   await pool.query(`CREATE TABLE IF NOT EXISTS education (id INT AUTO_INCREMENT PRIMARY KEY, institution VARCHAR(255) NULL, logo_image VARCHAR(500) NULL, discipline VARCHAR(255) NULL, domain_name VARCHAR(255) NULL, branch VARCHAR(255) NULL, stream VARCHAR(255) NULL, start_date VARCHAR(100) NULL, end_date VARCHAR(100) NULL, duration VARCHAR(150) NULL, description LONGTEXT NULL, url VARCHAR(1000) NULL, sort_order INT DEFAULT 0)`);
-  for (const [c,d] of [['institution','VARCHAR(255) NULL'],['logo_image','VARCHAR(500) NULL'],['discipline','VARCHAR(255) NULL'],['domain_name','VARCHAR(255) NULL'],['branch','VARCHAR(255) NULL'],['stream','VARCHAR(255) NULL'],['start_date','VARCHAR(100) NULL'],['end_date','VARCHAR(100) NULL'],['duration','VARCHAR(150) NULL'],['description','LONGTEXT NULL'],['url','VARCHAR(1000) NULL'],['sort_order','INT DEFAULT 0']]) await ensureColumn('education', c, d);
+  for (const [c, d] of [['institution', 'VARCHAR(255) NULL'], ['logo_image', 'VARCHAR(500) NULL'], ['discipline', 'VARCHAR(255) NULL'], ['domain_name', 'VARCHAR(255) NULL'], ['branch', 'VARCHAR(255) NULL'], ['stream', 'VARCHAR(255) NULL'], ['start_date', 'VARCHAR(100) NULL'], ['end_date', 'VARCHAR(100) NULL'], ['duration', 'VARCHAR(150) NULL'], ['description', 'LONGTEXT NULL'], ['url', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('education', c, d);
 }
 
 function firstExisting(map, names) {
@@ -173,9 +185,9 @@ async function dynamicInsert(table, values, requiredAliases = {}) {
 }
 
 function normalizedSite(row) {
-  const map = colMap(Object.keys(row).map(COLUMN_NAME => ({COLUMN_NAME})));
-  const name = valueFor(map, ['name','full_name','owner_name','display_name'], row, '');
-  const headline = valueFor(map, ['headline','title','tagline','role'], row, '');
+  const map = colMap(Object.keys(row).map(COLUMN_NAME => ({ COLUMN_NAME })));
+  const name = valueFor(map, ['name', 'full_name', 'owner_name', 'display_name'], row, '');
+  const headline = valueFor(map, ['headline', 'title', 'tagline', 'role'], row, '');
   return {
     ...row,
     name,
@@ -217,27 +229,27 @@ async function initDb() {
   const [skills] = await pool.query('SELECT id FROM skills LIMIT 1');
   if (!skills.length) {
     const seed = [
-      ['HTML Developer','Crafting semantic, accessible websites with HTML5 for optimal performance.','html.png',1],
-      ['CSS Developer','Creating responsive designs with CSS3, Flexbox, and Grid.','css.png',2],
-      ['JavaScript Developer','Building dynamic web applications with ES6 and DOM manipulation.','js.png',3],
-      ['C++ Programmer','Developing high-performance applications with OOP principles.','c++.png',4],
-      ['Python Developer','Building scalable applications with Python and data analysis tools.','python.png',5]
+      ['HTML Developer', 'Crafting semantic, accessible websites with HTML5 for optimal performance.', 'html.png', 1],
+      ['CSS Developer', 'Creating responsive designs with CSS3, Flexbox, and Grid.', 'css.png', 2],
+      ['JavaScript Developer', 'Building dynamic web applications with ES6 and DOM manipulation.', 'js.png', 3],
+      ['C++ Programmer', 'Developing high-performance applications with OOP principles.', 'c++.png', 4],
+      ['Python Developer', 'Building scalable applications with Python and data analysis tools.', 'python.png', 5]
     ];
-    for (const row of seed) await dynamicInsert('skills', {title:row[0],description:row[1],icon_file:row[2],icon_url:'',sort_order:row[3]});
+    for (const row of seed) await dynamicInsert('skills', { title: row[0], description: row[1], icon_file: row[2], icon_url: '', sort_order: row[3] });
   }
   const [projects] = await pool.query('SELECT id FROM projects LIMIT 1');
   if (!projects.length) {
     const seed = [
-      ['CLI Library Management System [CRUD]','A command-line library management system using CRUD operations and MySQL to manage books, members, and transactions.','c++.png','https://github.com/shivamsharma-builds/Library_Management/tree/main',1],
-      ['Weather App Using API','A JavaScript weather app that fetches live API data and displays temperature, humidity, conditions, and other weather details.','js.png','https://weather-main-xfqp.onrender.com',2],
-      ['Crop Prediction Using AI','An AI-powered agricultural project that predicts suitable crops using soil, weather, temperature, rainfall, and historical data.','vite.png','https://ai-crop-prediction.onrender.com',3],
-      ['Spotify Clone','A music-streaming UI inspired by Spotify, featuring song browsing, playlists, and playback-focused interface components.','js.png','https://spotifycloneshivam.netlify.app/',4]
+      ['CLI Library Management System [CRUD]', 'A command-line library management system using CRUD operations and MySQL to manage books, members, and transactions.', 'c++.png', 'https://github.com/shivamsharma-builds/Library_Management/tree/main', 1],
+      ['Weather App Using API', 'A JavaScript weather app that fetches live API data and displays temperature, humidity, conditions, and other weather details.', 'js.png', 'https://weather-main-xfqp.onrender.com', 2],
+      ['Crop Prediction Using AI', 'An AI-powered agricultural project that predicts suitable crops using soil, weather, temperature, rainfall, and historical data.', 'vite.png', 'https://ai-crop-prediction.onrender.com', 3],
+      ['Spotify Clone', 'A music-streaming UI inspired by Spotify, featuring song browsing, playlists, and playback-focused interface components.', 'js.png', 'https://spotifycloneshivam.netlify.app/', 4]
     ];
-    for (const row of seed) await dynamicInsert('projects', {title:row[0],description:row[1],icon_file:row[2],icon_url:'',image_url:'',project_file:'',project_url:row[3],sort_order:row[4]});
+    for (const row of seed) await dynamicInsert('projects', { title: row[0], description: row[1], icon_file: row[2], icon_url: '', image_url: '', project_file: '', project_url: row[3], sort_order: row[4] });
   }
 }
 
-app.post('/api/login', async (req,res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const [rows] = await pool.query('SELECT * FROM admins WHERE email=? LIMIT 1', [email]);
@@ -247,10 +259,10 @@ app.post('/api/login', async (req,res) => {
     res.json({ ok: true, redirect: '/admin.html' });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/api/logout', (req,res) => req.session.destroy(() => res.json({ ok:true, redirect:'/admin.html' })));
-app.get('/api/session', (req,res) => res.json({ authenticated: !!req.session.adminId, email: req.session.adminEmail || null }));
+app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: true, redirect: '/admin.html' })));
+app.get('/api/session', (req, res) => res.json({ authenticated: !!req.session.adminId, email: req.session.adminEmail || null }));
 
-app.get('/api/public', async (_req,res) => {
+app.get('/api/public', async (_req, res) => {
   try {
     const [[rawSite]] = await pool.query('SELECT * FROM site_content WHERE id=1');
     const [skills] = await pool.query('SELECT * FROM skills ORDER BY sort_order,id');
@@ -260,17 +272,17 @@ app.get('/api/public', async (_req,res) => {
     const [education] = await pool.query('SELECT * FROM education ORDER BY sort_order,id');
     const site = normalizedSite(rawSite || {});
     res.json({
-      site: {...site, profile_image: site.profile_image ? (/^https?:\/\//i.test(site.profile_image) ? site.profile_image : fileUrl(site.profile_image)) : '', resume_file: site.resume_file ? (/^https?:\/\//i.test(site.resume_file) ? site.resume_file : fileUrl(site.resume_file)) : '', hero_image: site.hero_image ? (/^https?:\/\//i.test(site.hero_image) ? site.hero_image : fileUrl(site.hero_image)) : '', about_image: site.about_image ? (/^https?:\/\//i.test(site.about_image) ? site.about_image : fileUrl(site.about_image)) : ''},
-      skills: skills.map(s=>({...s, icon_file: s.icon_url || (s.icon_file ? fileUrl(s.icon_file) : '')})),
-      projects: projects.map(p=>({...p, icon_file: p.image_url || p.icon_url || (p.icon_file ? fileUrl(p.icon_file) : ''), project_file: p.project_url || (p.project_file && /^https?:\/\//i.test(p.project_file) ? p.project_file : fileUrl(p.project_file)), github_url: p.github_url || p.project_url || ''})),
-      experiences,
-      certificates: certificates.map(c=>({...c, certificate_image: c.certificate_image && !/^https?:\/\//i.test(c.certificate_image) ? fileUrl(c.certificate_image) : (c.certificate_image || '')})),
-      education: education.map(e=>({...e, logo_image: e.logo_image && !/^https?:\/\//i.test(e.logo_image) ? fileUrl(e.logo_image) : (e.logo_image || '')}))
+      site: { ...site, profile_image: site.profile_image ? (/^https?:\/\//i.test(site.profile_image) ? site.profile_image : fileUrl(site.profile_image)) : '', resume_file: site.resume_file ? (/^https?:\/\//i.test(site.resume_file) ? site.resume_file : fileUrl(site.resume_file)) : '', hero_image: site.hero_image ? (/^https?:\/\//i.test(site.hero_image) ? site.hero_image : fileUrl(site.hero_image)) : '', about_image: site.about_image ? (/^https?:\/\//i.test(site.about_image) ? site.about_image : fileUrl(site.about_image)) : '' },
+      skills: skills.map(s => ({ ...s, icon_file: s.icon_url || (s.icon_file ? fileUrl(s.icon_file) : '') })),
+      projects: projects.map(p => ({ ...p, icon_file: p.image_url || p.icon_url || (p.icon_file ? fileUrl(p.icon_file) : ''), project_file: p.project_url || (p.project_file && /^https?:\/\//i.test(p.project_file) ? p.project_file : fileUrl(p.project_file)), github_url: p.github_url || p.project_url || '' })),
+      experiences: experiences.map(e => ({ ...e, logo_image: e.logo_image ? (isRemote(e.logo_image) ? e.logo_image : fileUrl(e.logo_image)) : '', offer_letter_file: e.offer_letter_file ? (isRemote(e.offer_letter_file) ? e.offer_letter_file : fileUrl(e.offer_letter_file)) : '', offer_letter_url: e.offer_letter_url || '' })),
+      certificates: certificates.map(c => ({ ...c, certificate_image: c.certificate_image && !/^https?:\/\//i.test(c.certificate_image) ? fileUrl(c.certificate_image) : (c.certificate_image || '') })),
+      education: education.map(e => ({ ...e, logo_image: e.logo_image && !/^https?:\/\//i.test(e.logo_image) ? fileUrl(e.logo_image) : (e.logo_image || '') }))
     });
-  } catch(e) { res.status(500).json({error:e.message}); }
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/admin/data', auth, async (_req,res) => {
+app.get('/api/admin/data', auth, async (_req, res) => {
   try {
     const [[rawSite]] = await pool.query('SELECT * FROM site_content WHERE id=1');
     const [skills] = await pool.query('SELECT * FROM skills ORDER BY sort_order,id');
@@ -278,25 +290,25 @@ app.get('/api/admin/data', auth, async (_req,res) => {
     const [experiences] = await pool.query('SELECT * FROM experiences ORDER BY sort_order,id');
     const [certificates] = await pool.query('SELECT * FROM certificates ORDER BY sort_order,id');
     const [education] = await pool.query('SELECT * FROM education ORDER BY sort_order,id');
-    res.json({site:normalizedSite(rawSite || {}),skills,projects,experiences,certificates,education});
-  } catch(e) { res.status(500).json({error:e.message}); }
+    res.json({ site: normalizedSite(rawSite || {}), skills, projects, experiences, certificates, education });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/admin/site', auth, upload.fields([{name:'profile_image',maxCount:1},{name:'resume_file',maxCount:1},{name:'hero_image',maxCount:1}]), async (req,res) => {
+app.post('/api/admin/site', auth, upload.fields([{ name: 'profile_image', maxCount: 1 }, { name: 'resume_file', maxCount: 1 }, { name: 'hero_image', maxCount: 1 }]), async (req, res) => {
   try {
     const fields = req.body || {};
     const [rows] = await pool.query('SELECT * FROM site_content WHERE id=1 LIMIT 1');
-    if (!rows.length) return res.status(409).json({error:'Portfolio record is missing. Restart the server to initialize the database.'});
+    if (!rows.length) return res.status(409).json({ error: 'Portfolio record is missing. Restart the server to initialize the database.' });
     const current = normalizedSite(rows[0]);
     const profile = req.files?.profile_image?.[0]?.filename || current.profile_image || fields.profile_image_url || null;
     const resume = req.files?.resume_file?.[0]?.filename || current.resume_file || fields.resume_url || null;
     const hero = req.files?.hero_image?.[0]?.filename || current.hero_image || fields.hero_image_url || null;
     const about = current.about_image || null;
-    if (!String(fields.name || current.name || '').trim() || !String(fields.headline || current.headline || '').trim()) return res.status(400).json({error:'Name and headline are required.'});
+    if (!String(fields.name || current.name || '').trim() || !String(fields.headline || current.headline || '').trim()) return res.status(400).json({ error: 'Name and headline are required.' });
 
     const values = {
-      name:String(fields.name || '').trim(), headline:String(fields.headline || '').trim(), intro:fields.intro || '', about_title:fields.about_title || '', about_text:fields.about_text || '',
-      what_i_do:fields.what_i_do || '', goals:fields.goals || '', email:fields.email || '', github:fields.github || '', location:fields.location || '',
+      name: String(fields.name || '').trim(), headline: String(fields.headline || '').trim(), intro: fields.intro || '', about_title: fields.about_title || '', about_text: fields.about_text || '',
+      what_i_do: fields.what_i_do || '', goals: fields.goals || '', email: fields.email || '', github: fields.github || '', location: fields.location || '',
       profile_image: profile && !/^https?:\/\//i.test(profile) ? cleanFileName(profile) : null,
       resume_file: resume && !/^https?:\/\//i.test(resume) ? cleanFileName(resume) : null,
       profile_image_url: fields.profile_image_url || (/^https?:\/\//i.test(profile || '') ? profile : ''),
@@ -304,57 +316,94 @@ app.post('/api/admin/site', auth, upload.fields([{name:'profile_image',maxCount:
       hero_typed: fields.hero_typed || '', hero_image: hero && !/^https?:\/\//i.test(hero) ? cleanFileName(hero) : '', about_image: about && !/^https?:\/\//i.test(about) ? cleanFileName(about) : '', footer_description: fields.footer_description || ''
     };
     await dynamicUpdate('site_content', 1, values);
-    res.json({ok:true});
-  } catch(e) { console.error('Admin site save failed:', e); res.status(500).json({error:e.message || 'Could not save portfolio information.'}); }
+    res.json({ ok: true });
+  } catch (e) { console.error('Admin site save failed:', e); res.status(500).json({ error: e.message || 'Could not save portfolio information.' }); }
 });
 
-app.post('/api/admin/skills', auth, upload.single('icon_file'), async (req,res) => {
+app.post('/api/admin/skills', auth, upload.single('icon_file'), async (req, res) => {
   try {
-    const {id,title,description,sort_order,icon_url} = req.body || {};
-    if (!String(title || '').trim()) return res.status(400).json({error:'Skill title is required.'});
+    const { id, category, title, description, sort_order, icon_url } = req.body || {};
+    if (!String(title || '').trim()) return res.status(400).json({ error: 'Skill title is required.' });
     const order = Number.isFinite(Number(sort_order)) ? Number(sort_order) : 0;
     let current = {};
-    if (id) { const [rows] = await pool.query('SELECT * FROM skills WHERE id=? LIMIT 1',[id]); if(!rows.length) return res.status(404).json({error:'Skill not found. Reload the page and try again.'}); current=rows[0]; }
+    if (id) { const [rows] = await pool.query('SELECT * FROM skills WHERE id=? LIMIT 1', [id]); if (!rows.length) return res.status(404).json({ error: 'Skill not found. Reload the page and try again.' }); current = rows[0]; }
     const uploaded = req.file?.filename || null;
     const iconFile = uploaded || cleanFileName(req.body?.existing_icon_file) || current.icon_file || null;
     const url = icon_url || current.icon_url || '';
-    const values = {title:String(title).trim(),description:description||'',sort_order:order,icon_file:iconFile,icon_url:url};
-    if (id) await dynamicUpdate('skills',id,values); else await dynamicInsert('skills',values);
-    res.json({ok:true});
-  } catch(e) { console.error('Admin skill save failed:',e); res.status(500).json({error:e.message || 'Could not save skill.'}); }
+    const values = { category: String(category || 'Other').trim() || 'Other', title: String(title).trim(), description: description || '', sort_order: order, icon_file: iconFile, icon_url: url };
+    if (id) await dynamicUpdate('skills', id, values); else await dynamicInsert('skills', values);
+    res.json({ ok: true });
+  } catch (e) { console.error('Admin skill save failed:', e); res.status(500).json({ error: e.message || 'Could not save skill.' }); }
 });
-app.delete('/api/admin/skills/:id', auth, async (req,res)=>{try{const [r]=await pool.query('DELETE FROM skills WHERE id=?',[req.params.id]); if(!r.affectedRows)return res.status(404).json({error:'Skill not found.'});res.json({ok:true});}catch(e){res.status(500).json({error:e.message});}});
+app.delete('/api/admin/skills/:id', auth, async (req, res) => { try { const [r] = await pool.query('DELETE FROM skills WHERE id=?', [req.params.id]); if (!r.affectedRows) return res.status(404).json({ error: 'Skill not found.' }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
-app.post('/api/admin/projects', auth, upload.single('icon_file'), async (req,res) => {
+app.post('/api/admin/projects', auth, upload.single('icon_file'), async (req, res) => {
   try {
-    const {id,title,description,sort_order,icon_url,image_url,project_url,github_url} = req.body || {};
-    if (!String(title || '').trim()) return res.status(400).json({error:'Project title is required.'});
+    const { id, title, description, sort_order, icon_url, image_url, project_url, github_url } = req.body || {};
+    if (!String(title || '').trim()) return res.status(400).json({ error: 'Project title is required.' });
     const order = Number.isFinite(Number(sort_order)) ? Number(sort_order) : 0;
-    let current={};
-    if(id){const [rows]=await pool.query('SELECT * FROM projects WHERE id=? LIMIT 1',[id]);if(!rows.length)return res.status(404).json({error:'Project not found. Reload the page and try again.'});current=rows[0];}
-    const iconUpload=req.file?.filename||null;
-    const iconFile=iconUpload||current.icon_file||null;
-    const values={title:String(title).trim(),description:description||'',sort_order:order,icon_file:iconFile,icon_url:icon_url||current.icon_url||'',image_url:image_url||current.image_url||'',project_url:project_url||current.project_url||'',github_url:github_url||current.github_url||''};
-    if(id) await dynamicUpdate('projects',id,values); else await dynamicInsert('projects',values);
-    res.json({ok:true});
-  } catch(e) { console.error('Admin project save failed:',e); res.status(500).json({error:e.message || 'Could not save project.'}); }
+    let current = {};
+    if (id) { const [rows] = await pool.query('SELECT * FROM projects WHERE id=? LIMIT 1', [id]); if (!rows.length) return res.status(404).json({ error: 'Project not found. Reload the page and try again.' }); current = rows[0]; }
+    const iconUpload = req.file?.filename || null;
+    const iconFile = iconUpload || current.icon_file || null;
+    const values = { title: String(title).trim(), description: description || '', sort_order: order, icon_file: iconFile, icon_url: icon_url || current.icon_url || '', image_url: image_url || current.image_url || '', project_url: project_url || current.project_url || '', github_url: github_url || current.github_url || '' };
+    if (id) await dynamicUpdate('projects', id, values); else await dynamicInsert('projects', values);
+    res.json({ ok: true });
+  } catch (e) { console.error('Admin project save failed:', e); res.status(500).json({ error: e.message || 'Could not save project.' }); }
 });
-app.delete('/api/admin/projects/:id', auth, async (req,res)=>{try{const [r]=await pool.query('DELETE FROM projects WHERE id=?',[req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Project not found.'});res.json({ok:true});}catch(e){res.status(500).json({error:e.message});}});
+app.delete('/api/admin/projects/:id', auth, async (req, res) => { try { const [r] = await pool.query('DELETE FROM projects WHERE id=?', [req.params.id]); if (!r.affectedRows) return res.status(404).json({ error: 'Project not found.' }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
-app.post('/api/admin/experiences', auth, upload.single('logo_image'), async (req,res)=>{
-  try { const {id,role,title,company,description,start_date,end_date,duration,location,url,sort_order}=req.body||{}; if(!String(title||role||'').trim()) return res.status(400).json({error:'Experience title is required.'}); let current={}; if(id){const [rows]=await pool.query('SELECT * FROM experiences WHERE id=? LIMIT 1',[id]);if(!rows.length)return res.status(404).json({error:'Experience not found.'});current=rows[0];} const logo=req.file?.filename||cleanFileName(req.body?.existing_logo_image)||current.logo_image||''; const values={role:String(title||role).trim(),title:String(title||role).trim(),company:company||'',logo_image:logo,description:description||'',start_date:start_date||'',end_date:end_date||'',duration:duration||'',location:location||'',url:url||'',sort_order:Number(sort_order)||0}; if(id) await dynamicUpdate('experiences',id,values); else await dynamicInsert('experiences',values); res.json({ok:true}); } catch(e){res.status(500).json({error:e.message});}
+app.post('/api/admin/experiences', auth, upload.fields([
+  { name: 'logo_image', maxCount: 1 },
+  { name: 'offer_letter_file', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { id, role, title, company, description, start_date, end_date, duration, location, url, sort_order } = req.body || {};
+    if (!String(title || role || '').trim()) return res.status(400).json({ error: 'Experience title is required.' });
+    let current = {};
+    if (id) {
+      const [rows] = await pool.query('SELECT * FROM experiences WHERE id=? LIMIT 1', [id]);
+      if (!rows.length) return res.status(404).json({ error: 'Experience not found.' });
+      current = rows[0];
+    }
+    const logo = req.files?.logo_image?.[0]?.filename || cleanFileName(req.body?.existing_logo_image) || current.logo_image || '';
+    const offerUpload = req.files?.offer_letter_file?.[0] || null;
+    if (offerUpload && !/\.pdf$/i.test(offerUpload.originalname)) {
+      fs.rmSync(path.join(UPLOAD_DIR, offerUpload.filename), { force: true });
+      return res.status(400).json({ error: 'Offer letter must be a PDF file.' });
+    }
+    const offerFile = offerUpload?.filename || cleanFileName(req.body?.existing_offer_letter_file) || current.offer_letter_file || '';
+    const values = {
+      role: String(title || role).trim(), title: String(title || role).trim(), company: company || '', logo_image: logo,
+      description: description || '', start_date: start_date || '', end_date: end_date || '', duration: duration || '',
+      location: location || '', url: url || '', offer_letter_file: offerFile, offer_letter_url: '',
+      sort_order: Number(sort_order) || 0
+    };
+    if (id) await dynamicUpdate('experiences', id, values); else await dynamicInsert('experiences', values);
+    res.json({ ok: true });
+  } catch (e) { console.error('Admin experience save failed:', e); res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/admin/experiences/:id', auth, async (req,res)=>{try{const [rows]=await pool.query('SELECT logo_image FROM experiences WHERE id=? LIMIT 1',[req.params.id]);const [r]=await pool.query('DELETE FROM experiences WHERE id=?',[req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Experience not found.'});if(rows[0]?.logo_image) fs.rm(path.join(UPLOAD_DIR,path.basename(rows[0].logo_image)),{force:true},()=>{});res.json({ok:true});}catch(e){res.status(500).json({error:e.message});}});
-app.post('/api/admin/certificates', auth, upload.single('certificate_image'), async (req,res)=>{
-  try { const {id,title,issuer,description,issue_date,credential_id,credential_url,sort_order}=req.body||{}; if(!String(title||'').trim()) return res.status(400).json({error:'Certificate title is required.'}); let current={}; if(id){const [rows]=await pool.query('SELECT * FROM certificates WHERE id=? LIMIT 1',[id]);if(!rows.length)return res.status(404).json({error:'Certificate not found.'});current=rows[0];} const image=req.file?.filename||cleanFileName(req.body?.existing_certificate_image)||current.certificate_image||''; const values={title:String(title).trim(),issuer:issuer||'',description:description||'',issue_date:issue_date||'',credential_id:credential_id||'',credential_url:credential_url||'',certificate_image:image,sort_order:Number(sort_order)||0}; if(id) await dynamicUpdate('certificates',id,values); else await dynamicInsert('certificates',values); res.json({ok:true}); } catch(e){res.status(500).json({error:e.message});}
+app.delete('/api/admin/experiences/:id', auth, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT logo_image,offer_letter_file FROM experiences WHERE id=? LIMIT 1', [req.params.id]);
+    const [r] = await pool.query('DELETE FROM experiences WHERE id=?', [req.params.id]);
+    if (!r.affectedRows) return res.status(404).json({ error: 'Experience not found.' });
+    for (const file of [rows[0]?.logo_image, rows[0]?.offer_letter_file]) {
+      if (file) fs.rm(path.join(UPLOAD_DIR, path.basename(file)), { force: true }, () => { });
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/admin/certificates/:id', auth, async (req,res)=>{try{const [rows]=await pool.query('SELECT certificate_image FROM certificates WHERE id=? LIMIT 1',[req.params.id]);const [r]=await pool.query('DELETE FROM certificates WHERE id=?',[req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Certificate not found.'});if(rows[0]?.certificate_image) fs.rm(path.join(UPLOAD_DIR,path.basename(rows[0].certificate_image)),{force:true},()=>{});res.json({ok:true});}catch(e){res.status(500).json({error:e.message});}});
+app.post('/api/admin/certificates', auth, upload.single('certificate_image'), async (req, res) => {
+  try { const { id, title, issuer, description, issue_date, credential_id, credential_url, sort_order } = req.body || {}; if (!String(title || '').trim()) return res.status(400).json({ error: 'Certificate title is required.' }); let current = {}; if (id) { const [rows] = await pool.query('SELECT * FROM certificates WHERE id=? LIMIT 1', [id]); if (!rows.length) return res.status(404).json({ error: 'Certificate not found.' }); current = rows[0]; } const image = req.file?.filename || cleanFileName(req.body?.existing_certificate_image) || current.certificate_image || ''; const values = { title: String(title).trim(), issuer: issuer || '', description: description || '', issue_date: issue_date || '', credential_id: credential_id || '', credential_url: credential_url || '', certificate_image: image, sort_order: Number(sort_order) || 0 }; if (id) await dynamicUpdate('certificates', id, values); else await dynamicInsert('certificates', values); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); }
+});
+app.delete('/api/admin/certificates/:id', auth, async (req, res) => { try { const [rows] = await pool.query('SELECT certificate_image FROM certificates WHERE id=? LIMIT 1', [req.params.id]); const [r] = await pool.query('DELETE FROM certificates WHERE id=?', [req.params.id]); if (!r.affectedRows) return res.status(404).json({ error: 'Certificate not found.' }); if (rows[0]?.certificate_image) fs.rm(path.join(UPLOAD_DIR, path.basename(rows[0].certificate_image)), { force: true }, () => { }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
-app.post('/api/admin/education', auth, upload.single('logo_image'), async (req,res)=>{
-  try { const {id,institution,discipline,domain_name,branch,stream,start_date,end_date,duration,description,url,sort_order}=req.body||{}; if(!String(institution||'').trim()) return res.status(400).json({error:'Institution is required.'}); let current={}; if(id){const [rows]=await pool.query('SELECT * FROM education WHERE id=? LIMIT 1',[id]);if(!rows.length)return res.status(404).json({error:'Education entry not found.'});current=rows[0];} const logo=req.file?.filename||cleanFileName(req.body?.existing_logo_image)||current.logo_image||''; const values={institution:String(institution).trim(),logo_image:logo,discipline:discipline||'',domain_name:domain_name||'',branch:branch||'',stream:stream||'',start_date:start_date||'',end_date:end_date||'',duration:duration||'',description:description||'',url:url||'',sort_order:Number(sort_order)||0}; if(id) await dynamicUpdate('education',id,values); else await dynamicInsert('education',values); res.json({ok:true}); } catch(e){res.status(500).json({error:e.message});}
+app.post('/api/admin/education', auth, upload.single('logo_image'), async (req, res) => {
+  try { const { id, institution, discipline, domain_name, branch, stream, start_date, end_date, duration, description, url, sort_order } = req.body || {}; if (!String(institution || '').trim()) return res.status(400).json({ error: 'Institution is required.' }); let current = {}; if (id) { const [rows] = await pool.query('SELECT * FROM education WHERE id=? LIMIT 1', [id]); if (!rows.length) return res.status(404).json({ error: 'Education entry not found.' }); current = rows[0]; } const logo = req.file?.filename || cleanFileName(req.body?.existing_logo_image) || current.logo_image || ''; const values = { institution: String(institution).trim(), logo_image: logo, discipline: discipline || '', domain_name: domain_name || '', branch: branch || '', stream: stream || '', start_date: start_date || '', end_date: end_date || '', duration: duration || '', description: description || '', url: url || '', sort_order: Number(sort_order) || 0 }; if (id) await dynamicUpdate('education', id, values); else await dynamicInsert('education', values); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/admin/education/:id', auth, async (req,res)=>{try{const [rows]=await pool.query('SELECT logo_image FROM education WHERE id=? LIMIT 1',[req.params.id]);const [r]=await pool.query('DELETE FROM education WHERE id=?',[req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Education entry not found.'});if(rows[0]?.logo_image) fs.rm(path.join(UPLOAD_DIR,path.basename(rows[0].logo_image)),{force:true},()=>{});res.json({ok:true});}catch(e){res.status(500).json({error:e.message});}});
-app.delete('/api/admin/site-image/:field', auth, async (req,res)=>{try{const allowed=['profile_image','hero_image','about_image'];if(!allowed.includes(req.params.field))return res.status(400).json({error:'Invalid image field.'});const [rows]=await pool.query('SELECT * FROM site_content WHERE id=1 LIMIT 1');if(!rows.length)return res.status(404).json({error:'Portfolio record not found.'});const old=rows[0][req.params.field];await dynamicUpdate('site_content',1,{[req.params.field]:null});if(old && !/^https?:\/\//i.test(old)) fs.rm(path.join(UPLOAD_DIR,path.basename(old)),{force:true},()=>{});res.json({ok:true});}catch(e){res.status(500).json({error:e.message});}});
+app.delete('/api/admin/education/:id', auth, async (req, res) => { try { const [rows] = await pool.query('SELECT logo_image FROM education WHERE id=? LIMIT 1', [req.params.id]); const [r] = await pool.query('DELETE FROM education WHERE id=?', [req.params.id]); if (!r.affectedRows) return res.status(404).json({ error: 'Education entry not found.' }); if (rows[0]?.logo_image) fs.rm(path.join(UPLOAD_DIR, path.basename(rows[0].logo_image)), { force: true }, () => { }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
+app.delete('/api/admin/site-image/:field', auth, async (req, res) => { try { const allowed = ['profile_image', 'hero_image', 'about_image']; if (!allowed.includes(req.params.field)) return res.status(400).json({ error: 'Invalid image field.' }); const [rows] = await pool.query('SELECT * FROM site_content WHERE id=1 LIMIT 1'); if (!rows.length) return res.status(404).json({ error: 'Portfolio record not found.' }); const old = rows[0][req.params.field]; await dynamicUpdate('site_content', 1, { [req.params.field]: null }); if (old && !/^https?:\/\//i.test(old)) fs.rm(path.join(UPLOAD_DIR, path.basename(old)), { force: true }, () => { }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError || err) {
@@ -364,6 +413,6 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.use('/admin', (req,res) => res.sendFile(path.join(ROOT,'admin.html')));
+app.use('/admin', (req, res) => res.sendFile(path.join(ROOT, 'admin.html')));
 
-initDb().then(()=>app.listen(PORT,()=>console.log(`Portfolio server running on http://localhost:${PORT}`))).catch(err=>{console.error('Database connection failed:',err.message);process.exit(1);});
+initDb().then(() => app.listen(PORT, () => console.log(`Portfolio server running on http://localhost:${PORT}`))).catch(err => { console.error('Database connection failed:', err.message); process.exit(1); });

@@ -1,54 +1,651 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Portfolio Admin Dashboard</title>
-<style>
-:root{--bg:#f6f7f9;--surface:#fff;--line:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:#111827;--primary-hover:#000;--danger:#b42318;--success:#087443;--soft:#f9fafb}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}button,input,textarea,select{font:inherit}.wrap{max-width:1080px;margin:auto;padding:24px 18px 110px}.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,24,40,.03)}.login{max-width:390px;margin:12vh auto}.top{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;background:rgba(246,247,249,.94);backdrop-filter:blur(10px);border-bottom:1px solid transparent}.top h1{font-size:20px;margin:0}.top .muted{margin:2px 0 0;font-size:12px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{grid-column:1/-1}label{display:block;font-size:12px;font-weight:650;margin:0 0 6px;color:#374151}input,textarea,select{width:100%;background:#fff;color:var(--text);border:1px solid #d1d5db;border-radius:7px;padding:9px 10px;outline:none;transition:border-color .15s,box-shadow .15s}input:focus,textarea:focus,select:focus{border-color:#6b7280;box-shadow:0 0 0 3px rgba(17,24,39,.06)}textarea{min-height:100px;resize:vertical}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button{border:1px solid transparent;border-radius:7px;padding:8px 12px;font-weight:650;cursor:pointer;background:var(--primary);color:#fff}button:hover{background:var(--primary-hover)}button.secondary{background:#fff;color:#374151;border-color:#d1d5db}button.secondary:hover{background:#f9fafb}button.danger{background:#fff;color:var(--danger);border-color:#f1b8b3}button.danger:hover{background:#fff5f4}button:disabled{opacity:.55;cursor:not-allowed}.status{min-height:20px;margin:9px 0 0;font-size:13px;font-weight:600}.success{color:var(--success)}.error{color:var(--danger)}.item{border:1px solid var(--line);border-radius:8px;padding:14px;margin:10px 0;background:#fff}.filebox{border:1px dashed #d1d5db;border-radius:7px;padding:10px;background:var(--soft)}.preview{display:flex;align-items:center;gap:9px;margin-top:9px;flex-wrap:wrap}.preview img{width:48px;height:48px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}.preview a{color:#374151;text-decoration:underline}.hidden{display:none!important}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.section-title h2{font-size:16px;margin:0}.section-title p{margin:2px 0 0}.badge{font-size:11px;color:#374151;background:#f3f4f6;border:1px solid var(--line);padding:4px 7px;border-radius:999px}.small{font-size:12px}.lock-btn{background:transparent!important;color:#6b7280!important;border:0!important;padding:1px 3px!important;font-size:12px;margin-left:5px}.field-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.locked-field{background:#f9fafb;color:#6b7280;cursor:not-allowed}.global-save{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:40;width:min(700px,calc(100% - 28px));margin:0;padding:10px 12px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 28px rgba(16,24,40,.12);backdrop-filter:blur(10px)}.global-save .status{margin:0}.global-save p{display:none}.global-save .actions{justify-content:center}.global-save #saveAllBtn{min-width:140px}.login h1{font-size:22px;margin:0 0 4px}.login label{margin-top:12px}.login button{width:100%;margin-top:14px}.login .status{text-align:center}.dashboard-nav{display:flex;gap:6px;overflow:auto;margin:4px 0 12px;padding-bottom:2px}.dashboard-nav a{white-space:nowrap;text-decoration:none;color:#6b7280;border:1px solid var(--line);background:#fff;padding:6px 9px;border-radius:6px;font-size:12px}.dashboard-nav a:hover{color:#111827;background:#f9fafb}@media(max-width:720px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:12px 10px 100px}.top{align-items:flex-start}.top .actions{width:100%}.top .actions a,.top .actions button{flex:1}.global-save{bottom:8px}.global-save .actions{justify-content:stretch}.global-save button{flex:1}.card{padding:15px}}
-</style>>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Portfolio Admin Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #fff;
+      --line: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #111827;
+      --primary-hover: #000;
+      --danger: #b42318;
+      --success: #087443;
+      --soft: #f9fafb
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 64px
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: auto;
+      padding: 74px 18px 28px
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .03);
+      scroll-margin-top: 70px
+    }
+
+    .login {
+      max-width: 390px;
+      margin: 12vh auto
+    }
+
+    .admin-navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px max(12px, calc((100% - 1080px)/2));
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 10px rgba(16, 24, 40, .05)
+    }
+
+    .admin-brand {
+      font-weight: 800;
+      white-space: nowrap;
+      margin-right: auto
+    }
+
+    .admin-links {
+      display: flex;
+      gap: 5px;
+      overflow: auto;
+      min-width: 0
+    }
+
+    .admin-links a {
+      white-space: nowrap;
+      text-decoration: none;
+      color: #4b5563;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 11px
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0
+    }
+
+    .admin-actions button,
+    .admin-actions a button {
+      white-space: nowrap
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px
+    }
+
+    .full {
+      grid-column: 1/-1
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 5px;
+      color: #374151
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      padding: 8px 9px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #6b7280;
+      box-shadow: 0 0 0 3px rgba(17, 24, 39, .06)
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical
+    }
+
+    .actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-weight: 650;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff
+    }
+
+    button:hover {
+      background: var(--primary-hover)
+    }
+
+    button.secondary {
+      background: #fff;
+      color: #374151;
+      border-color: #d1d5db
+    }
+
+    button.secondary:hover {
+      background: #f9fafb
+    }
+
+    button.danger {
+      background: #fff;
+      color: var(--danger);
+      border-color: #f1b8b3
+    }
+
+    button.danger:hover {
+      background: #fff5f4
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed
+    }
+
+    .status {
+      min-height: 18px;
+      margin: 7px 0 0;
+      font-size: 12px;
+      font-weight: 600
+    }
+
+    .success {
+      color: var(--success)
+    }
+
+    .error {
+      color: var(--danger)
+    }
+
+    .item {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 9px 0;
+      background: #fff
+    }
+
+    .filebox {
+      border: 1px dashed #d1d5db;
+      border-radius: 7px;
+      padding: 8px;
+      background: var(--soft)
+    }
+
+    .preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap
+    }
+
+    .preview img {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 7px;
+      border: 1px solid var(--line)
+    }
+
+    .preview a {
+      color: #374151;
+      text-decoration: underline
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px
+    }
+
+    .section-title h2 {
+      font-size: 16px;
+      margin: 0
+    }
+
+    .section-title p {
+      margin: 2px 0 0
+    }
+
+    .badge {
+      font-size: 11px;
+      color: #374151;
+      background: #f3f4f6;
+      border: 1px solid var(--line);
+      padding: 4px 7px;
+      border-radius: 999px
+    }
+
+    .small {
+      font-size: 12px
+    }
+
+    .item-tools {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 0 8px
+    }
+
+    .card-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .card-lock {
+      background: #fff !important;
+      color: #374151 !important;
+      border: 1px solid #d1d5db !important;
+      padding: 5px 8px !important;
+      font-size: 11px
+    }
+
+    .locked-form input,
+    .locked-form textarea,
+    .locked-form select,
+    .locked-form input[type=file] {
+      background: #f9fafb;
+      color: #6b7280
+    }
+
+    .locked-form .filebox {
+      opacity: .78
+    }
+
+    .field-head {
+      display: block
+    }
+
+    .login h1 {
+      font-size: 22px;
+      margin: 0 0 4px
+    }
+
+    .login label {
+      margin-top: 12px
+    }
+
+    .login button {
+      width: 100%;
+      margin-top: 14px
+    }
+
+    .login .status {
+      text-align: center
+    }
+
+    .justify {
+      text-align: justify;
+      text-justify: inter-word
+    }
+
+    .card p:not(.status) {
+      text-align: justify;
+      text-justify: inter-word
+    }
+
+    @media(max-width:760px) {
+      html {
+        scroll-padding-top: 112px
+      }
+
+      body {
+        font-size: 13px
+      }
+
+      .wrap {
+        width: 100%;
+        padding: 118px 9px 18px
+      }
+
+      .admin-navbar {
+        padding: 8px 9px;
+        flex-wrap: wrap;
+        gap: 6px
+      }
+
+      .admin-brand {
+        width: 100%;
+        font-size: 14px
+      }
+
+      .admin-links {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 1px
+      }
+
+      .admin-actions {
+        position: absolute;
+        right: 9px;
+        top: 7px
+      }
+
+      .admin-actions button,
+      .admin-actions a button {
+        padding: 6px 8px;
+        font-size: 11px
+      }
+
+      .card {
+        padding: 12px 10px;
+        margin: 9px 0;
+        border-radius: 9px
+      }
+
+      .section-title {
+        align-items: flex-start
+      }
+
+      .section-title>button {
+        min-height: 36px
+      }
+
+      .grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 9px
+      }
+
+      .full {
+        grid-column: auto
+      }
+
+      input,
+      textarea,
+      select {
+        min-height: 38px;
+        font-size: 14px;
+        padding: 7px 8px
+      }
+
+      textarea {
+        min-height: 86px
+      }
+
+      input[type=file] {
+        height: auto;
+        min-height: 40px;
+        padding: 8px 6px
+      }
+
+      .item {
+        padding: 10px;
+        margin: 8px 0
+      }
+
+      .actions {
+        width: 100%
+      }
+
+      .actions button {
+        min-height: 36px
+      }
+
+      .item .actions {
+        display: flex
+      }
+
+      .filebox {
+        padding: 7px;
+        overflow: hidden
+      }
+
+      .preview img {
+        width: 42px;
+        height: 42px
+      }
+    }
+
+    @media(max-width:430px) {
+      .admin-actions {
+        gap: 4px
+      }
+
+      .admin-actions button,
+      .admin-actions a button {
+        font-size: 10px;
+        padding: 5px 6px
+      }
+
+      .admin-brand {
+        font-size: 13px
+      }
+
+      .card-tools {
+        width: 100%;
+        justify-content: flex-end
+      }
+
+      .section-title>div:first-child {
+        min-width: 0
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-<section id="login" class="login card">
-<h1>Admin Login</h1><p class="muted">Sign in to manage your portfolio.</p>
-<form id="loginForm">
-<label>Email</label><input name="email" type="email" autocomplete="username" required>
-<label style="margin-top:14px">Password</label><input name="password" type="password" autocomplete="current-password" required>
-<button id="loginBtn" style="margin-top:16px;width:100%">Login</button>
-<p id="loginStatus" class="status"></p>
-</form></section>
+  <div class="wrap">
+    <section id="login" class="login card">
+      <h1>Admin Login</h1>
+      <p class="muted">Sign in to manage your portfolio.</p>
+      <form id="loginForm">
+        <label>Email</label><input name="email" type="email" autocomplete="username" required>
+        <label style="margin-top:14px">Password</label><input name="password" type="password"
+          autocomplete="current-password" required>
+        <button id="loginBtn" style="margin-top:16px;width:100%">Login</button>
+        <p id="loginStatus" class="status"></p>
+      </form>
+    </section>
 
-<section id="dashboard" class="hidden">
-<div class="top"><div><h1 style="margin-bottom:6px">Portfolio Dashboard</h1><p class="muted" style="margin-top:0">Changes are saved to your production database and persistent media storage.</p></div><div class="actions"><a href="/" target="_blank"><button type="button" class="secondary">View Portfolio</button></a><button type="button" id="logout" class="danger">Logout</button></div></div>
-<div class="dashboard-nav" aria-label="Dashboard sections"><a href="#portfolio">Portfolio</a><a href="#skillsCard">Skills</a><a href="#projectsCard">Projects</a><a href="#experienceCard">Experience</a><a href="#certificatesCard">Certificates</a><a href="#educationCard">Education</a></div>
+    <section id="dashboard" class="hidden">
+      <nav class="admin-navbar" aria-label="Admin navigation">
+        <div class="admin-brand">Portfolio Admin</div>
+        <div class="admin-links">
+          <a href="#portfolio">Portfolio</a><a href="#skillsCard">Skills</a><a href="#projectsCard">Projects</a>
+          <a href="#experienceCard">Experience</a><a href="#certificatesCard">Certificates</a><a
+            href="#educationCard">Education</a>
+        </div>
+        <div class="admin-actions">
+          <a href="/" target="_blank" rel="noopener noreferrer"><button type="button" class="secondary">View
+              Portfolio</button></a>
+          <button type="button" id="reloadSite" class="secondary">Reload DB</button><button type="button"
+            id="saveAllBtn">Save All</button>
+          <button type="button" id="logout" class="danger">Logout</button>
+        </div>
+      </nav>
 
-<div class="card" id="portfolio"><div class="section-title"><h2>Portfolio Information</h2><span class="badge">Database connected</span></div>
-<form id="siteForm" enctype="multipart/form-data"><div class="grid">
-<div><label>Name</label><input name="name" required></div><div><label>Headline</label><input name="headline" required></div>
-<div class="full"><label>Intro</label><textarea name="intro"></textarea></div>
-<div><label>About Title</label><input name="about_title" placeholder="About Me"></div><div><label>Email</label><input name="email" type="email"></div>
-<div class="full"><label>Hero Rotating Text <span class="muted small">(one line per item)</span></label><textarea name="hero_typed" placeholder="Efficient C++ Programmer
+      <div class="card" id="portfolio">
+        <div class="section-title">
+          <h2>Portfolio Information</h2>
+          <div class="card-tools"><span class="badge">Database connected</span><button type="button" class="card-lock"
+              data-lock-target="#siteForm">🔒 Lock Card</button></div>
+        </div>
+        <form id="siteForm" enctype="multipart/form-data">
+          <div class="grid">
+            <div><label>Name</label><input name="name" required></div>
+            <div><label>Headline</label><input name="headline" required></div>
+            <div class="full"><label>Intro</label><textarea name="intro"></textarea></div>
+            <div><label>About Title</label><input name="about_title" placeholder="About Me"></div>
+            <div><label>Email</label><input name="email" type="email"></div>
+            <div class="full"><label>Hero Rotating Text <span class="muted small">(one line per
+                  item)</span></label><textarea name="hero_typed" placeholder="Efficient C++ Programmer
 Python Developer
 Web Enthusiast"></textarea></div>
-<div class="full"><label>Footer Description</label><textarea name="footer_description" placeholder="Short description shown in the footer"></textarea></div>
-<div><label>GitHub</label><input name="github"></div><div><label>Location</label><input name="location"></div>
-<div class="full about-admin-block"><label>About Text</label><textarea name="about_text" placeholder="Write a concise introduction about your background, interests, and strengths."></textarea></div>
-<div><label>What I Do</label><textarea name="what_i_do" placeholder="One item per paragraph or line."></textarea></div><div><label>Goals</label><textarea name="goals" placeholder="Your current professional or learning goals."></textarea></div>
-<div><label>Profile Image</label><div class="filebox"><input type="file" name="profile_image" accept="image/jpeg,image/png,image/webp,image/gif"><input name="profile_image_url" placeholder="Or paste image URL" style="margin-top:8px"><div id="profilePreview"></div></div></div>
-<div><label>Hero Photo</label><div class="filebox"><input type="file" name="hero_image" accept="image/jpeg,image/png,image/webp,image/gif"><input name="hero_image_url" placeholder="Or paste hero image URL" style="margin-top:8px"><div id="heroPreview"></div></div></div>
-<div><label>Resume (PDF)</label><div class="filebox"><input type="file" name="resume_file" accept="application/pdf"><input name="resume_url" placeholder="Or paste resume URL" style="margin-top:8px"><div id="resumePreview"></div></div></div>
-</div><div class="actions" style="margin-top:18px"><button id="siteSaveBtn">Save Portfolio Information</button><button type="button" id="reloadSite" class="secondary">Reload From Database</button></div></form><p id="siteStatus" class="status"></p></div>
+            <div class="full"><label>Footer Description</label><textarea name="footer_description"
+                placeholder="Short description shown in the footer"></textarea></div>
+            <div><label>GitHub</label><input name="github"></div>
+            <div><label>Location</label><input name="location"></div>
+            <div class="full about-admin-block"><label>About Text</label><textarea name="about_text"
+                placeholder="Write a concise introduction about your background, interests, and strengths."></textarea>
+            </div>
+            <div><label>What I Do</label><textarea name="what_i_do"
+                placeholder="One item per paragraph or line."></textarea></div>
+            <div><label>Goals</label><textarea name="goals"
+                placeholder="Your current professional or learning goals."></textarea></div>
+            <div><label>Profile Image</label>
+              <div class="filebox"><input type="file" name="profile_image"
+                  accept="image/jpeg,image/png,image/webp,image/gif"><input name="profile_image_url"
+                  placeholder="Or paste image URL" style="margin-top:8px">
+                <div id="profilePreview"></div>
+              </div>
+            </div>
+            <div><label>Hero Photo</label>
+              <div class="filebox"><input type="file" name="hero_image"
+                  accept="image/jpeg,image/png,image/webp,image/gif"><input name="hero_image_url"
+                  placeholder="Or paste hero image URL" style="margin-top:8px">
+                <div id="heroPreview"></div>
+              </div>
+            </div>
+            <div><label>Resume (PDF)</label>
+              <div class="filebox"><input type="file" name="resume_file" accept="application/pdf"><input
+                  name="resume_url" placeholder="Or paste resume URL" style="margin-top:8px">
+                <div id="resumePreview"></div>
+              </div>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:18px"><button id="siteSaveBtn">Save Portfolio Information</button>
+          </div>
+        </form>
+        <p id="siteStatus" class="status"></p>
+      </div>
 
-<div class="card" id="skillsCard"><div class="section-title"><div><h2>Skills</h2><p class="muted small">Upload an icon or keep the current one. Max upload: 4 MB.</p></div><button type="button" id="newSkill">+ Add Skill</button></div><div id="skills"></div></div>
-<div class="card" id="projectsCard"><div class="section-title"><div><h2>Projects</h2><p class="muted small">Add a project icon, live link, optional GitHub URL, and image. Max upload: 4 MB.</p></div><button type="button" id="newProject">+ Add Project</button></div><div id="projects"></div></div>
-<div class="card" id="experienceCard"><div class="section-title"><div><h2>Experience</h2><p class="muted small">Add internships, jobs, freelance work, or other professional experience.</p></div><button type="button" id="newExperience">+ Add Experience</button></div><div id="experiences"></div></div>
-<div class="card" id="certificatesCard"><div class="section-title"><div><h2>Certificates</h2><p class="muted small">Add certifications, courses, credentials, and certificate links.</p></div><button type="button" id="newCertificate">+ Add Certificate</button></div><div id="certificates"></div></div>
-<div class="card" id="educationCard"><div class="section-title"><div><h2>Education</h2><p class="muted small">Schools, colleges, universities and academic programs.</p></div><button type="button" id="newEducation">+ Add Education</button></div><div id="education"></div></div>
+      <div class="card" id="skillsCard">
+        <div class="section-title">
+          <div>
+            <h2>Skills</h2>
+            <p class="muted small">Group skills by category such as Languages, Databases, Frameworks, and Tools.</p>
+          </div>
+          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#skills">🔒 Lock
+              Card</button><button type="button" id="newSkill">+ Add Skill</button></div>
+        </div>
+        <div id="skills"></div>
+      </div>
+      <div class="card" id="projectsCard">
+        <div class="section-title">
+          <div>
+            <h2>Projects</h2>
+            <p class="muted small">Add a project icon, live link, optional GitHub URL, and image. Max upload: 4 MB.</p>
+          </div>
+          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#projects">🔒 Lock
+              Card</button><button type="button" id="newProject">+ Add Project</button></div>
+        </div>
+        <div id="projects"></div>
+      </div>
+      <div class="card" id="experienceCard">
+        <div class="section-title">
+          <div>
+            <h2>Experience</h2>
+            <p class="muted small">Add internships, jobs, freelance work, or other professional experience.</p>
+          </div>
+          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#experiences">🔒 Lock
+              Card</button><button type="button" id="newExperience">+ Add Experience</button></div>
+        </div>
+        <div id="experiences"></div>
+      </div>
+      <div class="card" id="certificatesCard">
+        <div class="section-title">
+          <div>
+            <h2>Certificates</h2>
+            <p class="muted small">Add certifications, courses, credentials, and certificate links.</p>
+          </div>
+          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#certificates">🔒 Lock
+              Card</button><button type="button" id="newCertificate">+ Add Certificate</button></div>
+        </div>
+        <div id="certificates"></div>
+      </div>
+      <div class="card" id="educationCard">
+        <div class="section-title">
+          <div>
+            <h2>Education</h2>
+            <p class="muted small">Schools, colleges, universities and academic programs.</p>
+          </div>
+          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#education">🔒 Lock
+              Card</button><button type="button" id="newEducation">+ Add Education</button></div>
+        </div>
+        <div id="education"></div>
+      </div>
 
-<div class="global-save"><div class="actions"><button type="button" id="saveAllBtn">💾 Save All Data</button><button type="button" id="unlockAllBtn" class="secondary">🔓 Unlock All Fields</button><button type="button" id="lockAllBtn" class="secondary">🔒 Lock All Fields</button><span id="saveAllStatus" class="status"></span></div><p class="muted small" style="margin:8px 0 0">Every editable field can be locked individually. Locked fields cannot be changed until unlocked.</p></div>
-</section>
-</div>
-<script src="/admin.js"></script>
-</body></html>
+    </section>
+  </div>
+  <script src="/admin.js?v=20260826"></script>
+</body>
+
+</html>
