@@ -96,7 +96,7 @@ async function ensureSchemaCompatibility() {
     ['hero_typed', 'TEXT NULL'], ['hero_image', 'VARCHAR(1000) NULL'], ['about_image', 'VARCHAR(1000) NULL'], ['footer_description', 'LONGTEXT NULL']
   ];
   const skills = [
-    ['category', 'VARCHAR(100) NOT NULL DEFAULT \'Other\''], ['title', 'VARCHAR(255) NULL'], ['description', 'TEXT NULL'], ['icon_file', 'VARCHAR(500) NULL'],
+    ['title', 'VARCHAR(255) NULL'], ['description', 'TEXT NULL'], ['icon_file', 'VARCHAR(500) NULL'],
     ['icon_url', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']
   ];
   const projects = [
@@ -106,19 +106,8 @@ async function ensureSchemaCompatibility() {
   ];
   for (const [c, d] of site) await ensureColumn('site_content', c, d);
   for (const [c, d] of skills) await ensureColumn('skills', c, d);
-  await pool.query(`UPDATE skills SET category = CASE
-    WHEN LOWER(title) IN ('c','c++','cpp','java','python','javascript','typescript','php','go','rust','kotlin','swift') THEN 'Languages'
-    WHEN LOWER(title) LIKE '%html%' OR LOWER(title) LIKE '%css%' OR LOWER(title) LIKE '%web%' THEN 'Web Development'
-    WHEN LOWER(title) LIKE '%react%' OR LOWER(title) LIKE '%node%' OR LOWER(title) LIKE '%express%' OR LOWER(title) LIKE '%next%' OR LOWER(title) LIKE '%django%' OR LOWER(title) LIKE '%spring%' OR LOWER(title) LIKE '%angular%' OR LOWER(title) LIKE '%vue%' THEN 'Frameworks'
-    WHEN LOWER(title) LIKE '%tensorflow%' OR LOWER(title) LIKE '%pytorch%' OR LOWER(title) LIKE '%scikit%' OR LOWER(title) LIKE '%keras%' OR LOWER(title) LIKE '%machine learning%' OR LOWER(title) LIKE '%deep learning%' OR LOWER(title) LIKE '%artificial intelligence%' THEN 'AI & ML'
-    WHEN LOWER(title) LIKE '%sql%' OR LOWER(title) LIKE '%mysql%' OR LOWER(title) LIKE '%postgres%' OR LOWER(title) LIKE '%mongodb%' OR LOWER(title) LIKE '%database%' THEN 'Databases'
-    WHEN LOWER(title) LIKE '%git%' OR LOWER(title) LIKE '%docker%' OR LOWER(title) LIKE '%linux%' OR LOWER(title) LIKE '%aws%' OR LOWER(title) LIKE '%netlify%' OR LOWER(title) LIKE '%postman%' THEN 'Tools'
-    WHEN LOWER(title) LIKE '%numpy%' OR LOWER(title) LIKE '%pandas%' OR LOWER(title) LIKE '%matplotlib%' OR LOWER(title) LIKE '%library%' THEN 'Libraries'
-    ELSE COALESCE(NULLIF(TRIM(category), ''), 'Other')
-  END
-  WHERE category='Other' OR category IS NULL OR TRIM(category)='';`);
   for (const [c, d] of projects) await ensureColumn('projects', c, d);
-  for (const [c, d] of [['role', 'VARCHAR(255) NULL'], ['title', 'VARCHAR(255) NULL'], ['company', 'VARCHAR(255) NULL'], ['logo_image', 'VARCHAR(500) NULL'], ['description', 'LONGTEXT NULL'], ['start_date', 'VARCHAR(100) NULL'], ['end_date', 'VARCHAR(100) NULL'], ['duration', 'VARCHAR(150) NULL'], ['location', 'VARCHAR(255) NULL'], ['url', 'VARCHAR(1000) NULL'], ['offer_letter_url', 'VARCHAR(1000) NULL'], ['offer_letter_file', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('experiences', c, d);
+  for (const [c, d] of [['role', 'VARCHAR(255) NULL'], ['title', 'VARCHAR(255) NULL'], ['company', 'VARCHAR(255) NULL'], ['logo_image', 'VARCHAR(500) NULL'], ['description', 'LONGTEXT NULL'], ['start_date', 'VARCHAR(100) NULL'], ['end_date', 'VARCHAR(100) NULL'], ['duration', 'VARCHAR(150) NULL'], ['location', 'VARCHAR(255) NULL'], ['url', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('experiences', c, d);
   for (const [c, d] of [['title', 'VARCHAR(255) NULL'], ['issuer', 'VARCHAR(255) NULL'], ['description', 'LONGTEXT NULL'], ['issue_date', 'VARCHAR(100) NULL'], ['credential_id', 'VARCHAR(255) NULL'], ['credential_url', 'VARCHAR(1000) NULL'], ['certificate_image', 'VARCHAR(500) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('certificates', c, d);
   await pool.query(`CREATE TABLE IF NOT EXISTS education (id INT AUTO_INCREMENT PRIMARY KEY, institution VARCHAR(255) NULL, logo_image VARCHAR(500) NULL, discipline VARCHAR(255) NULL, domain_name VARCHAR(255) NULL, branch VARCHAR(255) NULL, stream VARCHAR(255) NULL, start_date VARCHAR(100) NULL, end_date VARCHAR(100) NULL, duration VARCHAR(150) NULL, description LONGTEXT NULL, url VARCHAR(1000) NULL, sort_order INT DEFAULT 0)`);
   for (const [c, d] of [['institution', 'VARCHAR(255) NULL'], ['logo_image', 'VARCHAR(500) NULL'], ['discipline', 'VARCHAR(255) NULL'], ['domain_name', 'VARCHAR(255) NULL'], ['branch', 'VARCHAR(255) NULL'], ['stream', 'VARCHAR(255) NULL'], ['start_date', 'VARCHAR(100) NULL'], ['end_date', 'VARCHAR(100) NULL'], ['duration', 'VARCHAR(150) NULL'], ['description', 'LONGTEXT NULL'], ['url', 'VARCHAR(1000) NULL'], ['sort_order', 'INT DEFAULT 0']]) await ensureColumn('education', c, d);
@@ -275,7 +264,7 @@ app.get('/api/public', async (_req, res) => {
       site: { ...site, profile_image: site.profile_image ? (/^https?:\/\//i.test(site.profile_image) ? site.profile_image : fileUrl(site.profile_image)) : '', resume_file: site.resume_file ? (/^https?:\/\//i.test(site.resume_file) ? site.resume_file : fileUrl(site.resume_file)) : '', hero_image: site.hero_image ? (/^https?:\/\//i.test(site.hero_image) ? site.hero_image : fileUrl(site.hero_image)) : '', about_image: site.about_image ? (/^https?:\/\//i.test(site.about_image) ? site.about_image : fileUrl(site.about_image)) : '' },
       skills: skills.map(s => ({ ...s, icon_file: s.icon_url || (s.icon_file ? fileUrl(s.icon_file) : '') })),
       projects: projects.map(p => ({ ...p, icon_file: p.image_url || p.icon_url || (p.icon_file ? fileUrl(p.icon_file) : ''), project_file: p.project_url || (p.project_file && /^https?:\/\//i.test(p.project_file) ? p.project_file : fileUrl(p.project_file)), github_url: p.github_url || p.project_url || '' })),
-      experiences: experiences.map(e => ({ ...e, logo_image: e.logo_image ? (isRemote(e.logo_image) ? e.logo_image : fileUrl(e.logo_image)) : '', offer_letter_file: e.offer_letter_file ? (isRemote(e.offer_letter_file) ? e.offer_letter_file : fileUrl(e.offer_letter_file)) : '', offer_letter_url: e.offer_letter_url || '' })),
+      experiences,
       certificates: certificates.map(c => ({ ...c, certificate_image: c.certificate_image && !/^https?:\/\//i.test(c.certificate_image) ? fileUrl(c.certificate_image) : (c.certificate_image || '') })),
       education: education.map(e => ({ ...e, logo_image: e.logo_image && !/^https?:\/\//i.test(e.logo_image) ? fileUrl(e.logo_image) : (e.logo_image || '') }))
     });
@@ -322,7 +311,7 @@ app.post('/api/admin/site', auth, upload.fields([{ name: 'profile_image', maxCou
 
 app.post('/api/admin/skills', auth, upload.single('icon_file'), async (req, res) => {
   try {
-    const { id, category, title, description, sort_order, icon_url } = req.body || {};
+    const { id, title, description, sort_order, icon_url } = req.body || {};
     if (!String(title || '').trim()) return res.status(400).json({ error: 'Skill title is required.' });
     const order = Number.isFinite(Number(sort_order)) ? Number(sort_order) : 0;
     let current = {};
@@ -330,7 +319,7 @@ app.post('/api/admin/skills', auth, upload.single('icon_file'), async (req, res)
     const uploaded = req.file?.filename || null;
     const iconFile = uploaded || cleanFileName(req.body?.existing_icon_file) || current.icon_file || null;
     const url = icon_url || current.icon_url || '';
-    const values = { category: String(category || 'Other').trim() || 'Other', title: String(title).trim(), description: description || '', sort_order: order, icon_file: iconFile, icon_url: url };
+    const values = { title: String(title).trim(), description: description || '', sort_order: order, icon_file: iconFile, icon_url: url };
     if (id) await dynamicUpdate('skills', id, values); else await dynamicInsert('skills', values);
     res.json({ ok: true });
   } catch (e) { console.error('Admin skill save failed:', e); res.status(500).json({ error: e.message || 'Could not save skill.' }); }
@@ -353,47 +342,10 @@ app.post('/api/admin/projects', auth, upload.single('icon_file'), async (req, re
 });
 app.delete('/api/admin/projects/:id', auth, async (req, res) => { try { const [r] = await pool.query('DELETE FROM projects WHERE id=?', [req.params.id]); if (!r.affectedRows) return res.status(404).json({ error: 'Project not found.' }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 
-app.post('/api/admin/experiences', auth, upload.fields([
-  { name: 'logo_image', maxCount: 1 },
-  { name: 'offer_letter_file', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const { id, role, title, company, description, start_date, end_date, duration, location, url, sort_order } = req.body || {};
-    if (!String(title || role || '').trim()) return res.status(400).json({ error: 'Experience title is required.' });
-    let current = {};
-    if (id) {
-      const [rows] = await pool.query('SELECT * FROM experiences WHERE id=? LIMIT 1', [id]);
-      if (!rows.length) return res.status(404).json({ error: 'Experience not found.' });
-      current = rows[0];
-    }
-    const logo = req.files?.logo_image?.[0]?.filename || cleanFileName(req.body?.existing_logo_image) || current.logo_image || '';
-    const offerUpload = req.files?.offer_letter_file?.[0] || null;
-    if (offerUpload && !/\.pdf$/i.test(offerUpload.originalname)) {
-      fs.rmSync(path.join(UPLOAD_DIR, offerUpload.filename), { force: true });
-      return res.status(400).json({ error: 'Offer letter must be a PDF file.' });
-    }
-    const offerFile = offerUpload?.filename || cleanFileName(req.body?.existing_offer_letter_file) || current.offer_letter_file || '';
-    const values = {
-      role: String(title || role).trim(), title: String(title || role).trim(), company: company || '', logo_image: logo,
-      description: description || '', start_date: start_date || '', end_date: end_date || '', duration: duration || '',
-      location: location || '', url: url || '', offer_letter_file: offerFile, offer_letter_url: '',
-      sort_order: Number(sort_order) || 0
-    };
-    if (id) await dynamicUpdate('experiences', id, values); else await dynamicInsert('experiences', values);
-    res.json({ ok: true });
-  } catch (e) { console.error('Admin experience save failed:', e); res.status(500).json({ error: e.message }); }
+app.post('/api/admin/experiences', auth, upload.single('logo_image'), async (req, res) => {
+  try { const { id, role, title, company, description, start_date, end_date, duration, location, url, sort_order } = req.body || {}; if (!String(title || role || '').trim()) return res.status(400).json({ error: 'Experience title is required.' }); let current = {}; if (id) { const [rows] = await pool.query('SELECT * FROM experiences WHERE id=? LIMIT 1', [id]); if (!rows.length) return res.status(404).json({ error: 'Experience not found.' }); current = rows[0]; } const logo = req.file?.filename || cleanFileName(req.body?.existing_logo_image) || current.logo_image || ''; const values = { role: String(title || role).trim(), title: String(title || role).trim(), company: company || '', logo_image: logo, description: description || '', start_date: start_date || '', end_date: end_date || '', duration: duration || '', location: location || '', url: url || '', sort_order: Number(sort_order) || 0 }; if (id) await dynamicUpdate('experiences', id, values); else await dynamicInsert('experiences', values); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.delete('/api/admin/experiences/:id', auth, async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT logo_image,offer_letter_file FROM experiences WHERE id=? LIMIT 1', [req.params.id]);
-    const [r] = await pool.query('DELETE FROM experiences WHERE id=?', [req.params.id]);
-    if (!r.affectedRows) return res.status(404).json({ error: 'Experience not found.' });
-    for (const file of [rows[0]?.logo_image, rows[0]?.offer_letter_file]) {
-      if (file) fs.rm(path.join(UPLOAD_DIR, path.basename(file)), { force: true }, () => { });
-    }
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
+app.delete('/api/admin/experiences/:id', auth, async (req, res) => { try { const [rows] = await pool.query('SELECT logo_image FROM experiences WHERE id=? LIMIT 1', [req.params.id]); const [r] = await pool.query('DELETE FROM experiences WHERE id=?', [req.params.id]); if (!r.affectedRows) return res.status(404).json({ error: 'Experience not found.' }); if (rows[0]?.logo_image) fs.rm(path.join(UPLOAD_DIR, path.basename(rows[0].logo_image)), { force: true }, () => { }); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); } });
 app.post('/api/admin/certificates', auth, upload.single('certificate_image'), async (req, res) => {
   try { const { id, title, issuer, description, issue_date, credential_id, credential_url, sort_order } = req.body || {}; if (!String(title || '').trim()) return res.status(400).json({ error: 'Certificate title is required.' }); let current = {}; if (id) { const [rows] = await pool.query('SELECT * FROM certificates WHERE id=? LIMIT 1', [id]); if (!rows.length) return res.status(404).json({ error: 'Certificate not found.' }); current = rows[0]; } const image = req.file?.filename || cleanFileName(req.body?.existing_certificate_image) || current.certificate_image || ''; const values = { title: String(title).trim(), issuer: issuer || '', description: description || '', issue_date: issue_date || '', credential_id: credential_id || '', credential_url: credential_url || '', certificate_image: image, sort_order: Number(sort_order) || 0 }; if (id) await dynamicUpdate('certificates', id, values); else await dynamicInsert('certificates', values); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: e.message }); }
 });

@@ -94,6 +94,17 @@ async function ensureSchema() {
       await db.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` VARCHAR(1000) NULL DEFAULT NULL`);
     }
   }
+
+  // Existing databases may have older NOT NULL URL columns without defaults.
+  // New blank Skill/Project records must be allowed to insert empty values.
+  for (const [table, columns] of Object.entries({
+    skills: ['icon_url'],
+    projects: ['icon_url','image_url','project_url','github_url','project_file']
+  })) {
+    for (const column of columns) {
+      await db.query(`ALTER TABLE \`${table}\` MODIFY COLUMN \`${column}\` VARCHAR(1000) NULL DEFAULT NULL`);
+    }
+  }
   const [[admin]] = await db.query('SELECT id FROM admins LIMIT 1');
   if (!admin && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
     const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
@@ -212,12 +223,12 @@ async function handleExperience(request) {
 }
 
 async function handleEntity(request, table, fileField, folder, requiredField, extra = {}) {
-  requireAuth(request); const form = await request.formData(); const f = fieldMap(form); const id = f.id ? Number(f.id) : null;
-  if (!String(f[requiredField] || '').trim()) throw Object.assign(new Error(`${requiredField === 'institution' ? 'Institution' : requiredField[0].toUpperCase() + requiredField.slice(1)} is required.`), { status: 400 });
-  let current = {}; if (id) { const [[row]] = await db.query(`SELECT * FROM \`${table}\` WHERE id=? LIMIT 1`, [id]); if (!row) throw Object.assign(new Error(`${table} entry not found.`), { status: 404 }); current = row; }
-  const file = form.get(fileField); const uploaded = await uploadFile(file, folder); const old = f[`existing_${fileField}`] || current[fileField] || '';
-  if (uploaded) { await deleteMedia(old); f[fileField] = uploaded; } else f[fileField] = old;
-  Object.assign(f, extra);
+  requireAuth(request); const form=await request.formData(); const f=fieldMap(form); const id=f.id ? Number(f.id) : null;
+  if (!String(f[requiredField]||'').trim()) throw Object.assign(new Error(`${requiredField === 'institution' ? 'Institution' : requiredField[0].toUpperCase()+requiredField.slice(1)} is required.`),{status:400});
+  let current={}; if(id){const [[row]]=await db.query(`SELECT * FROM \`${table}\` WHERE id=? LIMIT 1`,[id]);if(!row) throw Object.assign(new Error(`${table} entry not found.`),{status:404});current=row;}
+  const file=form.get(fileField); const uploaded=await uploadFile(file,folder); const old=f[`existing_${fileField}`] || current[fileField] || '';
+  if(uploaded){await deleteMedia(old); f[fileField]=uploaded;} else f[fileField]=old;
+  Object.assign(f,extra);
   if (table === 'skills' && f.icon_url === undefined) f.icon_url = '';
   if (table === 'experiences') f.role = String(f.title || f.role || '').trim();
   delete f.id; delete f[`existing_${fileField}`];
@@ -265,12 +276,12 @@ async function handleProject(request) {
   delete f.image_file;
 
   // Keep optional project fields valid even when an older/cached admin.js sends no value.
-  for (const key of ['description', 'icon_url', 'image_url', 'project_url', 'github_url', 'project_file', 'sort_order']) {
+  for (const key of ['description','icon_url','image_url','project_url','github_url','project_file','sort_order']) {
     if (f[key] === undefined || f[key] === null) f[key] = key === 'sort_order' ? 0 : '';
   }
 
   const savedId = await saveRow('projects', id, f);
-  return json({ ok: true, id: Number(savedId || id || 0) });
+  return json({ok:true, id: Number(savedId || id || 0)});
 }
 
 async function main(request) {

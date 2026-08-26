@@ -24,8 +24,7 @@
     }
 
     html {
-      scroll-behavior: smooth;
-      scroll-padding-top: 64px
+      scroll-behavior: smooth
     }
 
     body {
@@ -47,17 +46,16 @@
     .wrap {
       max-width: 1080px;
       margin: auto;
-      padding: 74px 18px 28px
+      padding: 24px 18px 110px
     }
 
     .card {
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 16px;
-      margin: 12px 0;
-      box-shadow: 0 1px 2px rgba(16, 24, 40, .03);
-      scroll-margin-top: 70px
+      padding: 20px;
+      margin: 14px 0;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .03)
     }
 
     .login {
@@ -65,55 +63,28 @@
       margin: 12vh auto
     }
 
-    .admin-navbar {
-      position: fixed;
+    .top {
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
+      z-index: 30;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      padding: 9px max(12px, calc((100% - 1080px)/2));
-      background: rgba(255, 255, 255, .96);
+      gap: 14px;
+      padding: 12px 0;
+      background: rgba(246, 247, 249, .94);
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-      box-shadow: 0 2px 10px rgba(16, 24, 40, .05)
+      border-bottom: 1px solid transparent
     }
 
-    .admin-brand {
-      font-weight: 800;
-      white-space: nowrap;
-      margin-right: auto
+    .top h1 {
+      font-size: 20px;
+      margin: 0
     }
 
-    .admin-links {
-      display: flex;
-      gap: 5px;
-      overflow: auto;
-      min-width: 0
-    }
-
-    .admin-links a {
-      white-space: nowrap;
-      text-decoration: none;
-      color: #4b5563;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-size: 11px
-    }
-
-    .admin-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0
-    }
-
-    .admin-actions button,
-    .admin-actions a button {
-      white-space: nowrap
+    .top .muted {
+      margin: 2px 0 0;
+      font-size: 12px
     }
 
     .muted {
@@ -123,7 +94,7 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px
+      gap: 14px
     }
 
     .full {
@@ -134,7 +105,7 @@
       display: block;
       font-size: 12px;
       font-weight: 650;
-      margin: 0 0 5px;
+      margin: 0 0 6px;
       color: #374151
     }
 
@@ -146,7 +117,7 @@
       color: var(--text);
       border: 1px solid #d1d5db;
       border-radius: 7px;
-      padding: 8px 9px;
+      padding: 9px 10px;
       outline: none;
       transition: border-color .15s, box-shadow .15s
     }
@@ -159,13 +130,13 @@
     }
 
     textarea {
-      min-height: 92px;
+      min-height: 100px;
       resize: vertical
     }
 
     .actions {
       display: flex;
-      gap: 7px;
+      gap: 8px;
       align-items: center;
       flex-wrap: wrap
     }
@@ -173,7 +144,7 @@
     button {
       border: 1px solid transparent;
       border-radius: 7px;
-      padding: 7px 10px;
+      padding: 8px 12px;
       font-weight: 650;
       cursor: pointer;
       background: var(--primary);
@@ -210,9 +181,9 @@
     }
 
     .status {
-      min-height: 18px;
-      margin: 7px 0 0;
-      font-size: 12px;
+      min-height: 20px;
+      margin: 9px 0 0;
+      font-size: 13px;
       font-weight: 600
     }
 
@@ -225,32 +196,31 @@
     }
 
     .item {
-      position: relative;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 12px;
-      margin: 9px 0;
+      padding: 14px;
+      margin: 10px 0;
       background: #fff
     }
 
     .filebox {
       border: 1px dashed #d1d5db;
       border-radius: 7px;
-      padding: 8px;
+      padding: 10px;
       background: var(--soft)
     }
 
     .preview {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 9px;
+      margin-top: 9px;
       flex-wrap: wrap
     }
 
     .preview img {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       object-fit: cover;
       border-radius: 7px;
       border: 1px solid var(--line)
@@ -268,10 +238,10 @@
     .section-title {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 10px
+      margin-bottom: 12px
     }
 
     .section-title h2 {
@@ -296,41 +266,58 @@
       font-size: 12px
     }
 
-    .item-tools {
-      display: flex;
-      justify-content: flex-end;
-      margin: 0 0 8px
-    }
-
-    .card-tools {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap
-    }
-
-    .card-lock {
-      background: #fff !important;
-      color: #374151 !important;
-      border: 1px solid #d1d5db !important;
-      padding: 5px 8px !important;
-      font-size: 11px
-    }
-
-    .locked-form input,
-    .locked-form textarea,
-    .locked-form select,
-    .locked-form input[type=file] {
-      background: #f9fafb;
-      color: #6b7280
-    }
-
-    .locked-form .filebox {
-      opacity: .78
+    .lock-btn {
+      background: transparent !important;
+      color: #6b7280 !important;
+      border: 0 !important;
+      padding: 1px 3px !important;
+      font-size: 12px;
+      margin-left: 5px
     }
 
     .field-head {
-      display: block
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px
+    }
+
+    .locked-field {
+      background: #f9fafb;
+      color: #6b7280;
+      cursor: not-allowed
+    }
+
+    .global-save {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      z-index: 40;
+      width: min(700px, calc(100% - 28px));
+      margin: 0;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, .96);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      box-shadow: 0 8px 28px rgba(16, 24, 40, .12);
+      backdrop-filter: blur(10px)
+    }
+
+    .global-save .status {
+      margin: 0
+    }
+
+    .global-save p {
+      display: none
+    }
+
+    .global-save .actions {
+      justify-content: center
+    }
+
+    .global-save #saveAllBtn {
+      min-width: 140px
     }
 
     .login h1 {
@@ -351,77 +338,105 @@
       text-align: center
     }
 
-    .justify {
-      text-align: justify;
-      text-justify: inter-word
+    .dashboard-nav {
+      display: flex;
+      gap: 6px;
+      overflow: auto;
+      margin: 4px 0 12px;
+      padding-bottom: 2px
     }
 
-    .card p:not(.status) {
-      text-align: justify;
-      text-justify: inter-word
+    .dashboard-nav a {
+      white-space: nowrap;
+      text-decoration: none;
+      color: #6b7280;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 6px 9px;
+      border-radius: 6px;
+      font-size: 12px
     }
 
-    @media(max-width:760px) {
+    .dashboard-nav a:hover {
+      color: #111827;
+      background: #f9fafb
+    }
+
+    @media(max-width:720px) {
       html {
-        scroll-padding-top: 112px
+        scroll-padding-top: 86px
       }
 
       body {
-        font-size: 13px
+        font-size: 14px;
+        overflow-x: hidden
       }
 
       .wrap {
         width: 100%;
-        padding: 118px 9px 18px
+        max-width: none;
+        padding: 10px 10px 120px
       }
 
-      .admin-navbar {
-        padding: 8px 9px;
-        flex-wrap: wrap;
-        gap: 6px
+      .top {
+        position: sticky;
+        top: 0;
+        padding: 10px 0;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px
       }
 
-      .admin-brand {
+      .top>div:first-child {
+        width: 100%
+      }
+
+      .top h1 {
+        font-size: 18px
+      }
+
+      .top .actions {
         width: 100%;
-        font-size: 14px
+        display: grid;
+        grid-template-columns: 1fr 1fr
       }
 
-      .admin-links {
-        order: 3;
+      .top .actions a,
+      .top .actions button {
         width: 100%;
-        overflow-x: auto;
-        padding-bottom: 1px
+        min-width: 0
       }
 
-      .admin-actions {
-        position: absolute;
-        right: 9px;
-        top: 7px
+      .dashboard-nav {
+        margin: 4px -10px 12px;
+        padding: 0 10px 5px;
+        scroll-snap-type: x proximity
       }
 
-      .admin-actions button,
-      .admin-actions a button {
-        padding: 6px 8px;
-        font-size: 11px
+      .dashboard-nav a {
+        flex: 0 0 auto;
+        scroll-snap-align: start
       }
 
       .card {
-        padding: 12px 10px;
-        margin: 9px 0;
-        border-radius: 9px
+        padding: 14px 12px;
+        margin: 10px 0;
+        border-radius: 10px
       }
 
       .section-title {
-        align-items: flex-start
+        align-items: stretch;
+        flex-direction: column
       }
 
       .section-title>button {
-        min-height: 36px
+        width: 100%;
+        min-height: 44px
       }
 
       .grid {
         grid-template-columns: minmax(0, 1fr);
-        gap: 9px
+        gap: 12px
       }
 
       .full {
@@ -431,24 +446,23 @@
       input,
       textarea,
       select {
-        min-height: 38px;
-        font-size: 14px;
-        padding: 7px 8px
+        min-height: 44px;
+        font-size: 16px
       }
 
       textarea {
-        min-height: 86px
+        min-height: 120px
       }
 
       input[type=file] {
         height: auto;
-        min-height: 40px;
-        padding: 8px 6px
+        min-height: 48px;
+        padding: 10px 8px
       }
 
       .item {
-        padding: 10px;
-        margin: 8px 0
+        padding: 12px;
+        margin: 10px 0
       }
 
       .actions {
@@ -456,46 +470,78 @@
       }
 
       .actions button {
-        min-height: 36px
+        min-height: 44px
       }
 
       .item .actions {
-        display: flex
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)
+      }
+
+      .item .actions .status {
+        grid-column: 1/-1
       }
 
       .filebox {
-        padding: 7px;
+        padding: 9px;
         overflow: hidden
       }
 
+      .filebox input[type=text],
+      .filebox input[type=url] {
+        margin-top: 8px !important
+      }
+
+      .preview {
+        align-items: flex-start
+      }
+
       .preview img {
-        width: 42px;
-        height: 42px
+        width: 56px;
+        height: 56px
+      }
+
+      .global-save {
+        left: 10px;
+        right: 10px;
+        bottom: 8px;
+        transform: none;
+        width: auto;
+        padding: 8px
+      }
+
+      .global-save .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px
+      }
+
+      .global-save #saveAllBtn {
+        grid-column: 1/-1;
+        min-height: 46px
+      }
+
+      .global-save button {
+        width: 100%;
+        min-height: 42px
+      }
+
+      .global-save #saveAllStatus {
+        grid-column: 1/-1;
+        text-align: center
       }
     }
 
-    @media(max-width:430px) {
-      .admin-actions {
-        gap: 4px
+    @media(max-width:380px) {
+
+      .top .actions,
+      .item .actions,
+      .global-save .actions {
+        grid-template-columns: 1fr
       }
 
-      .admin-actions button,
-      .admin-actions a button {
-        font-size: 10px;
-        padding: 5px 6px
-      }
-
-      .admin-brand {
-        font-size: 13px
-      }
-
-      .card-tools {
-        width: 100%;
-        justify-content: flex-end
-      }
-
-      .section-title>div:first-child {
-        min-width: 0
+      .global-save #saveAllBtn {
+        grid-column: auto
       }
     }
   </style>
@@ -516,27 +562,22 @@
     </section>
 
     <section id="dashboard" class="hidden">
-      <nav class="admin-navbar" aria-label="Admin navigation">
-        <div class="admin-brand">Portfolio Admin</div>
-        <div class="admin-links">
-          <a href="#portfolio">Portfolio</a><a href="#skillsCard">Skills</a><a href="#projectsCard">Projects</a>
-          <a href="#experienceCard">Experience</a><a href="#certificatesCard">Certificates</a><a
-            href="#educationCard">Education</a>
+      <div class="top">
+        <div>
+          <h1 style="margin-bottom:6px">Portfolio Dashboard</h1>
+          <p class="muted" style="margin-top:0">Changes are saved to your production database and persistent media
+            storage.</p>
         </div>
-        <div class="admin-actions">
-          <a href="/" target="_blank" rel="noopener noreferrer"><button type="button" class="secondary">View
-              Portfolio</button></a>
-          <button type="button" id="reloadSite" class="secondary">Reload DB</button><button type="button"
-            id="saveAllBtn">Save All</button>
-          <button type="button" id="logout" class="danger">Logout</button>
-        </div>
-      </nav>
+        <div class="actions"><a href="/" target="_blank" class="view-link"><button type="button" class="secondary">View
+              Portfolio</button></a><button type="button" id="logout" class="danger">Logout</button></div>
+      </div>
+      <div class="dashboard-nav" aria-label="Dashboard sections"><a href="#portfolio">Portfolio</a><a
+          href="#skillsCard">Skills</a><a href="#projectsCard">Projects</a><a href="#experienceCard">Experience</a><a
+          href="#certificatesCard">Certificates</a><a href="#educationCard">Education</a></div>
 
       <div class="card" id="portfolio">
         <div class="section-title">
-          <h2>Portfolio Information</h2>
-          <div class="card-tools"><span class="badge">Database connected</span><button type="button" class="card-lock"
-              data-lock-target="#siteForm">🔒 Lock Card</button></div>
+          <h2>Portfolio Information</h2><span class="badge">Database connected</span>
         </div>
         <form id="siteForm" enctype="multipart/form-data">
           <div class="grid">
@@ -581,7 +622,8 @@ Web Enthusiast"></textarea></div>
               </div>
             </div>
           </div>
-          <div class="actions" style="margin-top:18px"><button id="siteSaveBtn">Save Portfolio Information</button>
+          <div class="actions" style="margin-top:18px"><button id="siteSaveBtn">Save Portfolio
+              Information</button><button type="button" id="reloadSite" class="secondary">Reload From Database</button>
           </div>
         </form>
         <p id="siteStatus" class="status"></p>
@@ -591,10 +633,8 @@ Web Enthusiast"></textarea></div>
         <div class="section-title">
           <div>
             <h2>Skills</h2>
-            <p class="muted small">Group skills by category such as Languages, Databases, Frameworks, and Tools.</p>
-          </div>
-          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#skills">🔒 Lock
-              Card</button><button type="button" id="newSkill">+ Add Skill</button></div>
+            <p class="muted small">Upload an icon or keep the current one. Max upload: 4 MB.</p>
+          </div><button type="button" id="newSkill">+ Add Skill</button>
         </div>
         <div id="skills"></div>
       </div>
@@ -603,9 +643,7 @@ Web Enthusiast"></textarea></div>
           <div>
             <h2>Projects</h2>
             <p class="muted small">Add a project icon, live link, optional GitHub URL, and image. Max upload: 4 MB.</p>
-          </div>
-          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#projects">🔒 Lock
-              Card</button><button type="button" id="newProject">+ Add Project</button></div>
+          </div><button type="button" id="newProject">+ Add Project</button>
         </div>
         <div id="projects"></div>
       </div>
@@ -614,9 +652,7 @@ Web Enthusiast"></textarea></div>
           <div>
             <h2>Experience</h2>
             <p class="muted small">Add internships, jobs, freelance work, or other professional experience.</p>
-          </div>
-          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#experiences">🔒 Lock
-              Card</button><button type="button" id="newExperience">+ Add Experience</button></div>
+          </div><button type="button" id="newExperience">+ Add Experience</button>
         </div>
         <div id="experiences"></div>
       </div>
@@ -625,9 +661,7 @@ Web Enthusiast"></textarea></div>
           <div>
             <h2>Certificates</h2>
             <p class="muted small">Add certifications, courses, credentials, and certificate links.</p>
-          </div>
-          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#certificates">🔒 Lock
-              Card</button><button type="button" id="newCertificate">+ Add Certificate</button></div>
+          </div><button type="button" id="newCertificate">+ Add Certificate</button>
         </div>
         <div id="certificates"></div>
       </div>
@@ -636,16 +670,21 @@ Web Enthusiast"></textarea></div>
           <div>
             <h2>Education</h2>
             <p class="muted small">Schools, colleges, universities and academic programs.</p>
-          </div>
-          <div class="card-tools"><button type="button" class="card-lock" data-lock-target="#education">🔒 Lock
-              Card</button><button type="button" id="newEducation">+ Add Education</button></div>
+          </div><button type="button" id="newEducation">+ Add Education</button>
         </div>
         <div id="education"></div>
       </div>
 
+      <div class="global-save">
+        <div class="actions"><button type="button" id="saveAllBtn">ðŸ’¾ Save All Data</button><button type="button"
+            id="unlockAllBtn" class="secondary">ðŸ”“ Unlock All Fields</button><button type="button" id="lockAllBtn"
+            class="secondary">ðŸ”’ Lock All Fields</button><span id="saveAllStatus" class="status"></span></div>
+        <p class="muted small" style="margin:8px 0 0">Every editable field can be locked individually. Locked fields
+          cannot be changed until unlocked.</p>
+      </div>
     </section>
   </div>
-  <script src="/admin.js?v=20260826"></script>
+  <script src="/admin.js?v=20260825"></script>
 </body>
 
 </html>

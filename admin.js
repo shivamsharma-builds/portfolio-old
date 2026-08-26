@@ -157,7 +157,7 @@ $('#siteForm')?.addEventListener('submit', async event => {
   }
 });
 
-$('#reloadSite')?.addEventListener('click', async () => { const b = $('#reloadSite'); b.disabled = true; b.textContent = 'Reloading…'; try { await load(); } finally { b.disabled = false; b.textContent = 'Reload DB'; } });
+$('#reloadSite')?.addEventListener('click', load);
 
 // Compress image files in the browser before they are uploaded. This keeps the
 // original visual dimensions/quality for normal images and only reduces very
@@ -575,7 +575,6 @@ function renderExperiences() {
   c.innerHTML = items.length ? items.map(x => `
     <div class="item">
       <form class="experienceForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
-        <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
           <div><label>Experience Title</label><input name="title" value="${esc(x.title || x.role || '')}" required></div>
           <div><label>Company</label><input name="company" value="${esc(x.company || '')}"></div>
@@ -592,14 +591,6 @@ function renderExperiences() {
           <div class="full"><label>Description</label><textarea name="description">${esc(x.description || '')}</textarea></div>
           <div><label>Location <span class="muted small">(optional)</span></label><input name="location" value="${esc(x.location || '')}"></div>
           <div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url || '')}" placeholder="https://..."></div>
-          <div>
-            <label>Offer Letter PDF <span class="muted small">(optional)</span></label>
-            <div class="filebox">
-              <input name="offer_letter_file" type="file" accept="application/pdf,.pdf">
-              <input type="hidden" name="existing_offer_letter_file" value="${esc(x.offer_letter_file || '')}">
-              ${x.offer_letter_file ? `<div class="preview"><span class="small">Current offer letter PDF</span></div>` : ''}
-            </div>
-          </div>
           <div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order ?? 0)}"></div>
         </div>
         <div class="actions">
@@ -611,7 +602,7 @@ function renderExperiences() {
     </div>
   `).join('') : '<p class="muted">No experience entries yet.</p>';
 
-  decorateCardLocks(c);
+  decorateLocks(c);
   $$('.experienceForm', c).forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     try {
@@ -640,7 +631,6 @@ function renderCertificates() {
   c.innerHTML = items.length ? items.map(x => `
     <div class="item">
       <form class="certificateForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
-        <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
           <div><label>Certificate Title</label><input name="title" value="${esc(x.title)}" required></div>
           <div><label>Issuer</label><input name="issuer" value="${esc(x.issuer || '')}"></div>
@@ -664,7 +654,7 @@ function renderCertificates() {
     </div>
   `).join('') : '<p class="muted">No certificates yet.</p>';
 
-  decorateCardLocks(c);
+  decorateLocks(c);
   $$('.certificateForm', c).forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     try {
@@ -693,7 +683,6 @@ function renderEducation() {
   c.innerHTML = items.length ? items.map(x => `
     <div class="item">
       <form class="educationForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
-        <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
           <div><label>School / College / University</label><input name="institution" value="${esc(x.institution || '')}" required></div>
           <div>
@@ -723,7 +712,7 @@ function renderEducation() {
     </div>
   `).join('') : '<p class="muted">No education entries yet.</p>';
 
-  decorateCardLocks(c);
+  decorateLocks(c);
   $$('.educationForm', c).forEach(f => f.addEventListener('submit', async e => {
     e.preventDefault();
     try {
