@@ -1,124 +1,147 @@
-let data = { site: {}, skills: [], projects: [], experiences: [], certificates: [] };
+let data = {
+  site: {},
+  skills: [],
+  projects: [],
+  experiences: [],
+  certificates: [],
+};
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { credentials: 'same-origin', ...options });
+  const response = await fetch(url, { credentials: "same-origin", ...options });
   const text = await response.text();
   let json = {};
-  try { json = text ? JSON.parse(text) : {}; }
-  catch { throw new Error(`Server returned an invalid response (${response.status}).`); }
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      `Server returned an invalid response (${response.status}).`,
+    );
+  }
 
   if (response.status === 401) {
     showLogin();
-    throw new Error('Your session expired. Please log in again.');
+    throw new Error("Your session expired. Please log in again.");
   }
-  if (!response.ok) throw new Error(json.error || `Request failed (${response.status}).`);
+  if (!response.ok)
+    throw new Error(json.error || `Request failed (${response.status}).`);
   return json;
 }
 
 function setStatus(element, message, ok = false) {
   if (!element) return;
   element.textContent = message;
-  element.className = `status ${ok ? 'success' : 'error'}`;
+  element.className = `status ${ok ? "success" : "error"}`;
 }
 
 function showLogin() {
-  $('#dashboard')?.classList.add('hidden');
-  $('#login')?.classList.remove('hidden');
+  $("#dashboard")?.classList.add("hidden");
+  $("#login")?.classList.remove("hidden");
 }
 
 function showDashboard() {
-  $('#login')?.classList.add('hidden');
-  $('#dashboard')?.classList.remove('hidden');
+  $("#login")?.classList.add("hidden");
+  $("#dashboard")?.classList.remove("hidden");
   load();
 }
 
 function asset(value) {
-  if (!value) return '';
-  if (/^(https?:\/\/|\/api\/media\/|data:|blob:)/i.test(String(value))) return String(value);
-  if (String(value).startsWith('/uploads/')) return String(value);
-  return `/uploads/${encodeURIComponent(String(value).replace(/^.*[\\/]/, ''))}`;
+  if (!value) return "";
+  if (/^(https?:\/\/|\/api\/media\/|data:|blob:)/i.test(String(value)))
+    return String(value);
+  if (String(value).startsWith("/uploads/")) return String(value);
+  return `/uploads/${encodeURIComponent(String(value).replace(/^.*[\\/]/, ""))}`;
 }
 
-function esc(value = '') {
-  return String(value).replace(/[&<>"']/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-  }[char]));
+function esc(value = "") {
+  return String(value).replace(
+    /[&<>"']/g,
+    (char) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[char],
+  );
 }
 
 async function start() {
   try {
-    const session = await api('/api/session');
+    const session = await api("/api/session");
     if (session.authenticated) showDashboard();
     else showLogin();
   } catch (error) {
-    setStatus($('#loginStatus'), error.message);
+    setStatus($("#loginStatus"), error.message);
   }
 }
 
-$('#loginForm')?.addEventListener('submit', async event => {
+$("#loginForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const button = $('#loginBtn');
+  const button = $("#loginBtn");
   button.disabled = true;
-  button.textContent = 'Signing in…';
-  setStatus($('#loginStatus'), '');
+  button.textContent = "Signing in…";
+  setStatus($("#loginStatus"), "");
 
   try {
     const form = new FormData(event.currentTarget);
-    await api('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.fromEntries(form))
+    await api("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(form)),
     });
-    window.location.replace('/admin.html');
+    window.location.replace("/admin.html");
   } catch (error) {
-    setStatus($('#loginStatus'), error.message);
+    setStatus($("#loginStatus"), error.message);
   } finally {
     button.disabled = false;
-    button.textContent = 'Login';
+    button.textContent = "Login";
   }
 });
 
-$('#logout')?.addEventListener('click', async () => {
-  try { await api('/api/logout', { method: 'POST' }); }
-  catch (_) { }
+$("#logout")?.addEventListener("click", async () => {
+  try {
+    await api("/api/logout", { method: "POST" });
+  } catch (_) {}
   showLogin();
-  $('#loginForm')?.reset();
+  $("#loginForm")?.reset();
 });
 
 async function load() {
   try {
-    data = await api('/api/admin/data');
-    const form = $('#siteForm');
+    data = await api("/api/admin/data");
+    const form = $("#siteForm");
 
     if (form) {
       Object.entries(data.site || {}).forEach(([key, value]) => {
         const field = form.elements.namedItem(key);
-        if (field && field.type !== 'file') field.value = value ?? '';
+        if (field && field.type !== "file") field.value = value ?? "";
       });
     }
 
     renderFilePreviews();
     bindImageInputPreviews();
-    decorateCardLocks($('#siteForm'));
+    decorateCardLocks($("#siteForm"));
     renderSkills();
     renderProjects();
     renderExperiences();
     renderCertificates();
     renderEducation();
-    setStatus($('#siteStatus'), '');
+    setStatus($("#siteStatus"), "");
   } catch (error) {
-    if (!error.message.includes('session expired')) setStatus($('#siteStatus'), error.message);
+    if (!error.message.includes("session expired"))
+      setStatus($("#siteStatus"), error.message);
   }
 }
 
 function renderFilePreviews() {
   const site = data.site || {};
-  const profile = $('#profilePreview');
-  const hero = $('#heroPreview');
-  const resume = $('#resumePreview');
+  const profile = $("#profilePreview");
+  const hero = $("#heroPreview");
+  const resume = $("#resumePreview");
 
   if (profile) {
     profile.innerHTML = site.profile_image
@@ -127,7 +150,9 @@ function renderFilePreviews() {
   }
 
   if (hero) {
-    hero.innerHTML = site.hero_image ? `<div class="preview"><img src="${esc(asset(site.hero_image))}" alt="Current hero image"><span class="small">Current hero image</span><button type="button" class="danger deleteSiteImage" data-field="hero_image">Delete</button></div>` : '<p class="muted small">No hero image uploaded.</p>';
+    hero.innerHTML = site.hero_image
+      ? `<div class="preview"><img src="${esc(asset(site.hero_image))}" alt="Current hero image"><span class="small">Current hero image</span><button type="button" class="danger deleteSiteImage" data-field="hero_image">Delete</button></div>`
+      : '<p class="muted small">No hero image uploaded.</p>';
   }
   if (resume) {
     resume.innerHTML = site.resume_file
@@ -136,65 +161,98 @@ function renderFilePreviews() {
   }
 }
 
-$('#siteForm')?.addEventListener('submit', async event => {
+$("#siteForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const button = $('#siteSaveBtn');
+  const button = $("#siteSaveBtn");
   button.disabled = true;
-  button.textContent = 'Saving…';
+  button.textContent = "Saving…";
 
   try {
-    await api('/api/admin/site', {
-      method: 'POST',
-      body: await formDataWithLockedFields(event.currentTarget)
+    await api("/api/admin/site", {
+      method: "POST",
+      body: await formDataWithLockedFields(event.currentTarget),
     });
-    setStatus($('#siteStatus'), 'Portfolio information saved successfully.', true);
+    setStatus(
+      $("#siteStatus"),
+      "Portfolio information saved successfully.",
+      true,
+    );
     await load();
   } catch (error) {
-    setStatus($('#siteStatus'), error.message);
+    setStatus($("#siteStatus"), error.message);
   } finally {
     button.disabled = false;
-    button.textContent = 'Save Portfolio Information';
+    button.textContent = "Save Portfolio Information";
   }
 });
 
-$('#reloadSite')?.addEventListener('click', async () => { const b = $('#reloadSite'); b.disabled = true; b.textContent = 'Reloading…'; try { await load(); } finally { b.disabled = false; b.textContent = 'Reload DB'; } });
+$("#reloadSite")?.addEventListener("click", async () => {
+  const b = $("#reloadSite");
+  b.disabled = true;
+  b.textContent = "Reloading…";
+  try {
+    await load();
+  } finally {
+    b.disabled = false;
+    b.textContent = "Reload DB";
+  }
+});
 
 // Compress image files in the browser before they are uploaded. This keeps the
 // original visual dimensions/quality for normal images and only reduces very
 // large files. The database stores URLs/filenames; the compressed image is
 // saved to the uploads folder by the server.
 async function compressImageFile(file, options = {}) {
-  if (!file || !file.type.startsWith('image/')) return file;
+  if (!file || !file.type.startsWith("image/")) return file;
   const maxBytes = options.maxBytes ?? 4 * 1024 * 1024;
   const maxDimension = options.maxDimension ?? 2560;
   if (file.size <= maxBytes) return file;
 
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(
+    1,
+    maxDimension / Math.max(bitmap.width, bitmap.height),
+  );
   const width = Math.max(1, Math.round(bitmap.width * scale));
   const height = Math.max(1, Math.round(bitmap.height * scale));
-  const canvas = document.createElement('canvas');
-  canvas.width = width; canvas.height = height;
-  const ctx = canvas.getContext('2d', { alpha: true });
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { alpha: true });
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  ctx.imageSmoothingQuality = "high";
   ctx.drawImage(bitmap, 0, 0, width, height);
   bitmap.close?.();
 
-  const mime = file.type === 'image/png' ? 'image/png' : 'image/webp';
-  const quality = mime === 'image/png' ? undefined : 0.92;
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, mime, quality));
+  const mime = file.type === "image/png" ? "image/png" : "image/webp";
+  const quality = mime === "image/png" ? undefined : 0.92;
+  const blob = await new Promise((resolve) =>
+    canvas.toBlob(resolve, mime, quality),
+  );
   if (!blob || blob.size >= file.size) return file;
-  const ext = mime === 'image/png' ? '.png' : '.webp';
-  const base = file.name.replace(/\.[^.]+$/, '') || 'image';
-  return new File([blob], `${base}${ext}`, { type: mime, lastModified: Date.now() });
+  const ext = mime === "image/png" ? ".png" : ".webp";
+  const base = file.name.replace(/\.[^.]+$/, "") || "image";
+  return new File([blob], `${base}${ext}`, {
+    type: mime,
+    lastModified: Date.now(),
+  });
 }
 
 async function prepareImageFiles(formData) {
-  const names = ['profile_image', 'hero_image', 'icon_file', 'image_file', 'certificate_image'];
+  const names = [
+    "profile_image",
+    "hero_image",
+    "icon_file",
+    "image_file",
+    "certificate_image",
+  ];
   for (const name of names) {
     const file = formData.get(name);
-    if (file instanceof File && file.size > 0 && file.type.startsWith('image/')) {
+    if (
+      file instanceof File &&
+      file.size > 0 &&
+      file.type.startsWith("image/")
+    ) {
       formData.set(name, await compressImageFile(file));
     }
   }
@@ -202,13 +260,16 @@ async function prepareImageFiles(formData) {
 }
 
 function bindImageInputPreviews() {
-  const pairs = [['profile_image', '#profilePreview'], ['hero_image', '#heroPreview']];
+  const pairs = [
+    ["profile_image", "#profilePreview"],
+    ["hero_image", "#heroPreview"],
+  ];
   for (const [name, target] of pairs) {
     const input = document.querySelector(`input[name="${name}"]`);
     const box = document.querySelector(target);
-    if (!input || !box || input.dataset.previewReady === '1') continue;
-    input.dataset.previewReady = '1';
-    input.addEventListener('change', () => {
+    if (!input || !box || input.dataset.previewReady === "1") continue;
+    input.dataset.previewReady = "1";
+    input.addEventListener("change", () => {
       const file = input.files?.[0];
       if (!file) return;
       const url = URL.createObjectURL(file);
@@ -217,143 +278,186 @@ function bindImageInputPreviews() {
   }
 }
 
-document.addEventListener('change', event => {
+document.addEventListener("change", (event) => {
   const input = event.target.closest('input[type="file"]');
   if (!input || !input.name) return;
-  if (!['icon_file', 'image_file', 'certificate_image', 'logo_image'].includes(input.name)) return;
-  const box = input.closest('.filebox');
+  if (
+    !["icon_file", "image_file", "certificate_image", "logo_image"].includes(
+      input.name,
+    )
+  )
+    return;
+  const box = input.closest(".filebox");
   if (!box) return;
   const file = input.files?.[0];
-  if (!file || !file.type.startsWith('image/')) return;
+  if (!file || !file.type.startsWith("image/")) return;
   const url = URL.createObjectURL(file);
-  let preview = box.querySelector('.upload-preview');
+  let preview = box.querySelector(".upload-preview");
   if (!preview) {
-    preview = document.createElement('div');
-    preview.className = 'preview upload-preview';
+    preview = document.createElement("div");
+    preview.className = "preview upload-preview";
     box.appendChild(preview);
   }
   preview.innerHTML = `<img src="${url}" alt="Selected image preview"><span class="small">Ready to upload: ${esc(file.name)}</span>`;
 });
 
 async function formDataWithLockedFields(form) {
-  const locked = $$('input,textarea,select', form).map(field => ({ field, disabled: field.disabled }));
-  locked.forEach(x => { if (x.field.disabled) x.field.disabled = false; });
+  const locked = $$("input,textarea,select", form).map((field) => ({
+    field,
+    disabled: field.disabled,
+  }));
+  locked.forEach((x) => {
+    if (x.field.disabled) x.field.disabled = false;
+  });
   const fd = new FormData(form);
-  locked.forEach(x => { x.field.disabled = x.disabled; });
+  locked.forEach((x) => {
+    x.field.disabled = x.disabled;
+  });
   return prepareImageFiles(fd);
 }
 
 function setFormLocked(form, locked) {
   if (!form) return;
-  form.classList.toggle('locked-form', !!locked);
-  $$('input:not([type="hidden"]), textarea, select', form).forEach(field => {
+  form.classList.toggle("locked-form", !!locked);
+  $$('input:not([type="hidden"]), textarea, select', form).forEach((field) => {
     field.disabled = !!locked;
   });
-  const button = $('.card-lock', form);
+  const button = $(".card-lock", form);
   if (button) {
-    button.textContent = locked ? '🔓 Unlock Card' : '🔒 Lock Card';
-    button.title = locked ? 'Unlock this card to edit its fields' : 'Lock this card';
-    button.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    button.textContent = locked ? "🔓 Unlock Card" : "🔒 Lock Card";
+    button.title = locked
+      ? "Unlock this card to edit its fields"
+      : "Lock this card";
+    button.setAttribute("aria-pressed", locked ? "true" : "false");
   }
 }
 
 function decorateCardLocks(root = document) {
   // One lock control per editable card/form. There are no global lock/unlock controls.
-  $$('form.skillForm, form.projectForm, form.experienceForm, form.certificateForm, form.educationForm, form#siteForm', root)
-    .forEach(form => {
-      if (form.dataset.cardLockReady === '1') return;
-      form.dataset.cardLockReady = '1';
-      setFormLocked(form, true);
-    });
-  $$('button.card-lock[data-lock-target]', root).forEach(button => {
+  $$(
+    "form.skillForm, form.projectForm, form.experienceForm, form.certificateForm, form.educationForm, form#siteForm",
+    root,
+  ).forEach((form) => {
+    if (form.dataset.cardLockReady === "1") return;
+    form.dataset.cardLockReady = "1";
+    setFormLocked(form, true);
+  });
+  $$("button.card-lock[data-lock-target]", root).forEach((button) => {
     const target = document.querySelector(button.dataset.lockTarget);
-    const forms = target ? $$('form', target) : [];
-    const allLocked = forms.length ? forms.every(form => form.classList.contains('locked-form')) : true;
-    button.textContent = allLocked ? '🔓 Unlock Card' : '🔒 Lock Card';
-    button.setAttribute('aria-pressed', allLocked ? 'true' : 'false');
+    const forms = target ? $$("form", target) : [];
+    const allLocked = forms.length
+      ? forms.every((form) => form.classList.contains("locked-form"))
+      : true;
+    button.textContent = allLocked ? "🔓 Unlock Card" : "🔒 Lock Card";
+    button.setAttribute("aria-pressed", allLocked ? "true" : "false");
   });
 }
 
 function toggleCardLock(form) {
   if (!form) return;
-  setFormLocked(form, !form.classList.contains('locked-form'));
+  setFormLocked(form, !form.classList.contains("locked-form"));
 }
 
-document.addEventListener('click', event => {
-  const button = event.target.closest('.card-lock');
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".card-lock");
   if (!button) return;
   event.preventDefault();
-  const target = button.dataset.lockTarget ? document.querySelector(button.dataset.lockTarget) : button.closest('form');
+  const target = button.dataset.lockTarget
+    ? document.querySelector(button.dataset.lockTarget)
+    : button.closest("form");
   if (target) {
-    if (target.matches('form')) toggleCardLock(target);
+    if (target.matches("form")) toggleCardLock(target);
     else {
-      const forms = $$('form', target);
-      const locked = forms.some(form => !form.classList.contains('locked-form'));
-      forms.forEach(form => setFormLocked(form, locked));
-      button.textContent = locked ? '🔓 Unlock Card' : '🔒 Lock Card';
-      button.setAttribute('aria-pressed', locked ? 'true' : 'false');
+      const forms = $$("form", target);
+      const locked = forms.some(
+        (form) => !form.classList.contains("locked-form"),
+      );
+      forms.forEach((form) => setFormLocked(form, locked));
+      button.textContent = locked ? "🔓 Unlock Card" : "🔒 Lock Card";
+      button.setAttribute("aria-pressed", locked ? "true" : "false");
     }
   }
 });
 
-document.addEventListener('click', async (event) => {
-  const button = event.target.closest('.deleteSiteImage');
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest(".deleteSiteImage");
   if (!button) return;
-  if (!confirm('Delete this previously uploaded image?')) return;
+  if (!confirm("Delete this previously uploaded image?")) return;
   button.disabled = true;
-  try { await api(`/api/admin/site-image/${encodeURIComponent(button.dataset.field)}`, { method: 'DELETE' }); await load(); }
-  catch (error) { alert(error.message); button.disabled = false; }
+  try {
+    await api(
+      `/api/admin/site-image/${encodeURIComponent(button.dataset.field)}`,
+      { method: "DELETE" },
+    );
+    await load();
+  } catch (error) {
+    alert(error.message);
+    button.disabled = false;
+  }
 });
 
 async function saveSiteOnly() {
-  const form = $('#siteForm');
+  const form = $("#siteForm");
   if (!form) return;
-  await api('/api/admin/site', { method: 'POST', body: await formDataWithLockedFields(form) });
+  await api("/api/admin/site", {
+    method: "POST",
+    body: await formDataWithLockedFields(form),
+  });
 }
 
 async function saveSkillOnly(form) {
   const skills = Array.isArray(data.skills) ? data.skills : [];
   const formData = await formDataWithLockedFields(form);
-  const categorySelect = $('.skillCategorySelect', form);
-  const customCategory = $('.skillCustomCategory', form);
-  if (categorySelect?.value === 'Other' && customCategory?.value.trim()) {
-    formData.set('category', customCategory.value.trim());
+  const categorySelect = $(".skillCategorySelect", form);
+  const customCategory = $(".skillCustomCategory", form);
+  if (categorySelect?.value === "Other" && customCategory?.value.trim()) {
+    formData.set("category", customCategory.value.trim());
   }
-  formData.set('id', form.dataset.id);
-  formData.set('existing_icon_file', skills.find(item => String(item.id) === String(form.dataset.id))?.icon_file || '');
-  await api('/api/admin/skills', { method: 'POST', body: formData });
+  formData.set("id", form.dataset.id);
+  formData.set(
+    "existing_icon_file",
+    skills.find((item) => String(item.id) === String(form.dataset.id))
+      ?.icon_file || "",
+  );
+  await api("/api/admin/skills", { method: "POST", body: formData });
 }
 
 async function saveProjectOnly(form) {
   const formData = await formDataWithLockedFields(form);
-  formData.set('id', form.dataset.id);
-  const current = (data.projects || []).find(item => String(item.id) === String(form.dataset.id));
-  formData.set('existing_icon_file', current?.icon_file || '');
-  formData.set('existing_image_url', current?.image_url || '');
-  await api('/api/admin/projects', { method: 'POST', body: formData });
+  formData.set("id", form.dataset.id);
+  const current = (data.projects || []).find(
+    (item) => String(item.id) === String(form.dataset.id),
+  );
+  formData.set("existing_icon_file", current?.icon_file || "");
+  formData.set("existing_image_url", current?.image_url || "");
+  await api("/api/admin/projects", { method: "POST", body: formData });
 }
 
 async function saveAllData() {
-  const button = $('#saveAllBtn');
-  const status = $('#saveAllStatus');
-  button.disabled = true; button.textContent = 'Saving All…';
-  setStatus(status, '');
+  const button = $("#saveAllBtn");
+  const status = $("#saveAllStatus");
+  button.disabled = true;
+  button.textContent = "Saving All…";
+  setStatus(status, "");
   try {
     await saveSiteOnly();
-    for (const form of $$('.skillForm')) await saveSkillOnly(form);
-    for (const form of $$('.projectForm')) await saveProjectOnly(form);
-    for (const form of $$('.experienceForm')) await saveExperienceOnly(form);
-    for (const form of $$('.certificateForm')) await saveCertificateOnly(form);
-    for (const form of $$('.educationForm')) await saveEducationOnly(form);
-    setStatus(status, 'All portfolio data saved successfully.', true);
+    for (const form of $$(".skillForm")) await saveSkillOnly(form);
+    for (const form of $$(".projectForm")) await saveProjectOnly(form);
+    for (const form of $$(".experienceForm")) await saveExperienceOnly(form);
+    for (const form of $$(".certificateForm")) await saveCertificateOnly(form);
+    for (const form of $$(".educationForm")) await saveEducationOnly(form);
+    setStatus(status, "All portfolio data saved successfully.", true);
     await load();
   } catch (error) {
     setStatus(status, `Save stopped: ${error.message}`);
-  } finally { button.disabled = false; button.textContent = '💾 Save All Data'; }
+  } finally {
+    button.disabled = false;
+    button.textContent = "💾 Save All Data";
+  }
 }
 
 function renderSkills() {
-  const container = $('#skills');
+  const container = $("#skills");
   if (!container) return;
 
   const skills = Array.isArray(data.skills) ? data.skills : [];
@@ -362,7 +466,9 @@ function renderSkills() {
     return;
   }
 
-  container.innerHTML = skills.map(skill => `
+  container.innerHTML = skills
+    .map(
+      (skill) => `
     <div class="item">
       <form class="skillForm" data-id="${esc(skill.id)}" enctype="multipart/form-data">
         <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
@@ -370,19 +476,19 @@ function renderSkills() {
           <div>
             <label>Category</label>
             <select name="category" class="skillCategorySelect">
-              ${['Languages', 'Web Development', 'Frameworks', 'Libraries', 'Databases', 'AI & ML', 'Tools', 'Cloud & DevOps', 'Testing', 'Mobile Development', 'IDEs & Editors', 'Operating Systems', 'Modules', 'Other'].map(c => `<option value="${esc(c)}" ${String(skill.category || 'Other') === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+              ${["Languages", "Web Development", "Frameworks", "Libraries", "Databases", "AI & ML", "Tools", "Cloud & DevOps", "Testing", "Mobile Development", "IDEs & Editors", "Operating Systems", "Modules", "Other"].map((c) => `<option value="${esc(c)}" ${String(skill.category || "Other") === c ? "selected" : ""}>${esc(c)}</option>`).join("")}
             </select>
-            <input name="custom_category" class="skillCustomCategory" value="${!['Languages', 'Web Development', 'Frameworks', 'Libraries', 'Databases', 'AI & ML', 'Tools', 'Cloud & DevOps', 'Testing', 'Mobile Development', 'IDEs & Editors', 'Operating Systems', 'Modules', 'Other'].includes(String(skill.category || 'Other')) ? esc(skill.category) : ''}" placeholder="Enter your category" style="display:none;margin-top:8px">
+            <input name="custom_category" class="skillCustomCategory" value="${!["Languages", "Web Development", "Frameworks", "Libraries", "Databases", "AI & ML", "Tools", "Cloud & DevOps", "Testing", "Mobile Development", "IDEs & Editors", "Operating Systems", "Modules", "Other"].includes(String(skill.category || "Other")) ? esc(skill.category) : ""}" placeholder="Enter your category" style="display:none;margin-top:8px">
           </div>
           <div><label>Title</label><input name="title" value="${esc(skill.title)}" required></div>
           <div><label>Order</label><input name="sort_order" type="number" value="${esc(skill.sort_order ?? 0)}"></div>
-          <div class="full"><label>Description</label><textarea name="description">${esc(skill.description || '')}</textarea></div>
+          <div class="full"><label>Description</label><textarea name="description">${esc(skill.description || "")}</textarea></div>
           <div>
             <label>Skill Icon</label>
             <div class="filebox">
               <input name="icon_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-              <input name="icon_url" value="${esc(skill.icon_url || '')}" placeholder="Or paste icon URL" style="margin-top:8px">
-              ${skill.icon_file ? `<div class="preview"><img src="${esc(asset(skill.icon_file))}" alt="Current icon"><span class="small">Current icon</span></div>` : ''}
+              <input name="icon_url" value="${esc(skill.icon_url || "")}" placeholder="Or paste icon URL" style="margin-top:8px">
+              ${skill.icon_file ? `<div class="preview"><img src="${esc(asset(skill.icon_file))}" alt="Current icon"><span class="small">Current icon</span></div>` : ""}
             </div>
           </div>
         </div>
@@ -393,57 +499,65 @@ function renderSkills() {
         <p class="status skillStatus"></p>
       </form>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 
   decorateCardLocks(container);
 
-  $$('.skillForm', container).forEach(form => {
-    const select = $('.skillCategorySelect', form);
-    const custom = $('.skillCustomCategory', form);
+  $$(".skillForm", container).forEach((form) => {
+    const select = $(".skillCategorySelect", form);
+    const custom = $(".skillCustomCategory", form);
     const syncCategory = () => {
-      const show = select?.value === 'Other';
-      if (custom) custom.style.display = show ? 'block' : 'none';
+      const show = select?.value === "Other";
+      if (custom) custom.style.display = show ? "block" : "none";
     };
-    select?.addEventListener('change', syncCategory);
+    select?.addEventListener("change", syncCategory);
     syncCategory();
   });
 
-  $$('.skillForm', container).forEach(form => {
-    form.addEventListener('submit', async event => {
+  $$(".skillForm", container).forEach((form) => {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const status = $('.skillStatus', form);
+      const status = $(".skillStatus", form);
       const button = $('button[type="submit"]', form);
       button.disabled = true;
-      button.textContent = 'Saving…';
+      button.textContent = "Saving…";
 
       try {
         const formData = await formDataWithLockedFields(form);
-        const categorySelect = $('.skillCategorySelect', form);
-        const customCategory = $('.skillCustomCategory', form);
-        if (categorySelect?.value === 'Other' && customCategory?.value.trim()) {
-          formData.set('category', customCategory.value.trim());
+        const categorySelect = $(".skillCategorySelect", form);
+        const customCategory = $(".skillCustomCategory", form);
+        if (categorySelect?.value === "Other" && customCategory?.value.trim()) {
+          formData.set("category", customCategory.value.trim());
         }
-        formData.set('id', form.dataset.id);
-        formData.set('existing_icon_file',
-          skills.find(item => String(item.id) === String(form.dataset.id))?.icon_file || '');
-        await api('/api/admin/skills', { method: 'POST', body: formData });
-        setStatus(status, 'Skill saved successfully.', true);
+        formData.set("id", form.dataset.id);
+        formData.set(
+          "existing_icon_file",
+          skills.find((item) => String(item.id) === String(form.dataset.id))
+            ?.icon_file || "",
+        );
+        await api("/api/admin/skills", { method: "POST", body: formData });
+        setStatus(status, "Skill saved successfully.", true);
         await load();
       } catch (error) {
         setStatus(status, error.message);
       } finally {
         button.disabled = false;
-        button.textContent = 'Save Skill';
+        button.textContent = "Save Skill";
       }
     });
   });
 
-  $$('.delSkill', container).forEach(button => {
-    button.addEventListener('click', async () => {
-      if (!confirm('Delete this skill?')) return;
+  $$(".delSkill", container).forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!confirm("Delete this skill?")) return;
       button.disabled = true;
       try {
-        await api(`/api/admin/skills/${encodeURIComponent(button.dataset.id)}`, { method: 'DELETE' });
+        await api(
+          `/api/admin/skills/${encodeURIComponent(button.dataset.id)}`,
+          { method: "DELETE" },
+        );
         await load();
       } catch (error) {
         alert(error.message);
@@ -454,7 +568,7 @@ function renderSkills() {
 }
 
 function renderProjects() {
-  const container = $('#projects');
+  const container = $("#projects");
   if (!container) return;
 
   const projects = Array.isArray(data.projects) ? data.projects : [];
@@ -463,37 +577,39 @@ function renderProjects() {
     return;
   }
 
-  container.innerHTML = projects.map(project => `
+  container.innerHTML = projects
+    .map(
+      (project) => `
     <div class="item">
       <form class="projectForm" data-id="${esc(project.id)}" enctype="multipart/form-data">
         <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
           <div><label>Title</label><input name="title" value="${esc(project.title)}" required></div>
           <div><label>Order</label><input name="sort_order" type="number" value="${esc(project.sort_order ?? 0)}"></div>
-          <div class="full"><label>Description</label><textarea name="description">${esc(project.description || '')}</textarea></div>
+          <div class="full"><label>Description</label><textarea name="description">${esc(project.description || "")}</textarea></div>
           <div>
             <label>Project Icon</label>
             <div class="filebox">
               <input name="icon_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-              <input name="icon_url" value="${esc(project.icon_url || '')}" placeholder="Icon URL (optional)" style="margin-top:8px">
-              ${project.icon_file ? `<div class="preview"><img src="${esc(asset(project.icon_file))}" alt="Current project icon"><span class="small">Current icon</span></div>` : ''}
+              <input name="icon_url" value="${esc(project.icon_url || "")}" placeholder="Icon URL (optional)" style="margin-top:8px">
+              ${project.icon_file ? `<div class="preview"><img src="${esc(asset(project.icon_file))}" alt="Current project icon"><span class="small">Current icon</span></div>` : ""}
             </div>
           </div>
           <div>
             <label>Project Link</label>
-            <input name="project_url" value="${esc(project.project_url || '')}" placeholder="https://example.com/project">
+            <input name="project_url" value="${esc(project.project_url || "")}" placeholder="https://example.com/project">
           </div>
           <div>
             <label>Project Image</label>
             <div class="filebox">
               <input name="image_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-              <input name="image_url" value="${esc(project.image_url || '')}" placeholder="Or paste image URL" style="margin-top:8px">
-              ${project.image_url ? `<div class="preview"><img src="${esc(asset(project.image_url))}" alt="Current project image"><span class="small">Current project image</span></div>` : ''}
+              <input name="image_url" value="${esc(project.image_url || "")}" placeholder="Or paste image URL" style="margin-top:8px">
+              ${project.image_url ? `<div class="preview"><img src="${esc(asset(project.image_url))}" alt="Current project image"><span class="small">Current project image</span></div>` : ""}
             </div>
           </div>
           <div>
             <label>GitHub URL <span class="muted small">(optional)</span></label>
-            <input name="github_url" value="${esc(project.github_url || project.project_url || '')}" placeholder="https://github.com/username/repository">
+            <input name="github_url" value="${esc(project.github_url || project.project_url || "")}" placeholder="https://github.com/username/repository">
           </div>
         </div>
         <div class="actions" style="margin-top:14px">
@@ -503,42 +619,49 @@ function renderProjects() {
         <p class="status projectStatus"></p>
       </form>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 
   decorateCardLocks(container);
 
-  $$('.projectForm', container).forEach(form => {
-    form.addEventListener('submit', async event => {
+  $$(".projectForm", container).forEach((form) => {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const status = $('.projectStatus', form);
+      const status = $(".projectStatus", form);
       const button = $('button[type="submit"]', form);
       button.disabled = true;
-      button.textContent = 'Saving…';
+      button.textContent = "Saving…";
 
       try {
         const formData = await formDataWithLockedFields(form);
-        formData.set('id', form.dataset.id);
-        const current = projects.find(item => String(item.id) === String(form.dataset.id));
-        formData.set('existing_icon_file', current?.icon_file || '');
-        formData.set('existing_image_url', current?.image_url || '');
-        await api('/api/admin/projects', { method: 'POST', body: formData });
-        setStatus(status, 'Project saved successfully.', true);
+        formData.set("id", form.dataset.id);
+        const current = projects.find(
+          (item) => String(item.id) === String(form.dataset.id),
+        );
+        formData.set("existing_icon_file", current?.icon_file || "");
+        formData.set("existing_image_url", current?.image_url || "");
+        await api("/api/admin/projects", { method: "POST", body: formData });
+        setStatus(status, "Project saved successfully.", true);
         await load();
       } catch (error) {
         setStatus(status, error.message);
       } finally {
         button.disabled = false;
-        button.textContent = 'Save Project';
+        button.textContent = "Save Project";
       }
     });
   });
 
-  $$('.delProject', container).forEach(button => {
-    button.addEventListener('click', async () => {
-      if (!confirm('Delete this project?')) return;
+  $$(".delProject", container).forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!confirm("Delete this project?")) return;
       button.disabled = true;
       try {
-        await api(`/api/admin/projects/${encodeURIComponent(button.dataset.id)}`, { method: 'DELETE' });
+        await api(
+          `/api/admin/projects/${encodeURIComponent(button.dataset.id)}`,
+          { method: "DELETE" },
+        );
         await load();
       } catch (error) {
         alert(error.message);
@@ -550,54 +673,65 @@ function renderProjects() {
 
 async function saveExperienceOnly(form) {
   const fd = await formDataWithLockedFields(form);
-  fd.set('id', form.dataset.id || '');
-  await api('/api/admin/experiences', { method: 'POST', body: fd });
+  fd.set("id", form.dataset.id || "");
+  await api("/api/admin/experiences", { method: "POST", body: fd });
 }
 
 async function saveCertificateOnly(form) {
   const fd = await formDataWithLockedFields(form);
-  fd.set('id', form.dataset.id || '');
-  fd.set('existing_certificate_image', data.certificates.find(x => String(x.id) === String(form.dataset.id))?.certificate_image || '');
-  await api('/api/admin/certificates', { method: 'POST', body: fd });
+  fd.set("id", form.dataset.id || "");
+  fd.set(
+    "existing_certificate_image",
+    data.certificates.find((x) => String(x.id) === String(form.dataset.id))
+      ?.certificate_image || "",
+  );
+  await api("/api/admin/certificates", { method: "POST", body: fd });
 }
 
 async function saveEducationOnly(form) {
   const fd = await formDataWithLockedFields(form);
-  fd.set('id', form.dataset.id || '');
-  fd.set('existing_logo_image', data.education.find(x => String(x.id) === String(form.dataset.id))?.logo_image || '');
-  await api('/api/admin/education', { method: 'POST', body: fd });
+  fd.set("id", form.dataset.id || "");
+  fd.set(
+    "existing_logo_image",
+    data.education.find((x) => String(x.id) === String(form.dataset.id))
+      ?.logo_image || "",
+  );
+  await api("/api/admin/education", { method: "POST", body: fd });
 }
 
 function renderExperiences() {
-  const c = $('#experiences');
+  const c = $("#experiences");
   if (!c) return;
   const items = data.experiences || [];
-  c.innerHTML = items.length ? items.map(x => `
+  c.innerHTML = items.length
+    ? items
+        .map(
+          (x) => `
     <div class="item">
       <form class="experienceForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
         <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
-          <div><label>Experience Title</label><input name="title" value="${esc(x.title || x.role || '')}" required></div>
-          <div><label>Company</label><input name="company" value="${esc(x.company || '')}"></div>
-          <div><label>Duration</label><input name="duration" value="${esc(x.duration || '')}" placeholder="Jun 2025 — Present"></div>
-          <div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date || '')}"></div>
-          <div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date || '')}"></div>
+          <div><label>Experience Title</label><input name="title" value="${esc(x.title || x.role || "")}" required></div>
+          <div><label>Company</label><input name="company" value="${esc(x.company || "")}"></div>
+          <div><label>Duration</label><input name="duration" value="${esc(x.duration || "")}" placeholder="Jun 2025 — Present"></div>
+          <div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date || "")}"></div>
+          <div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date || "")}"></div>
           <div>
             <label>Company Logo <span class="muted small">(optional)</span></label>
             <div class="filebox">
               <input name="logo_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-              ${x.logo_image ? `<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Company logo"><span class="small">Current logo</span></div>` : ''}
+              ${x.logo_image ? `<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Company logo"><span class="small">Current logo</span></div>` : ""}
             </div>
           </div>
-          <div class="full"><label>Description</label><textarea name="description">${esc(x.description || '')}</textarea></div>
-          <div><label>Location <span class="muted small">(optional)</span></label><input name="location" value="${esc(x.location || '')}"></div>
-          <div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url || '')}" placeholder="https://..."></div>
+          <div class="full"><label>Description</label><textarea name="description">${esc(x.description || "")}</textarea></div>
+          <div><label>Location <span class="muted small">(optional)</span></label><input name="location" value="${esc(x.location || "")}"></div>
+          <div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url || "")}" placeholder="https://..."></div>
           <div>
             <label>Offer Letter PDF <span class="muted small">(optional)</span></label>
             <div class="filebox">
               <input name="offer_letter_file" type="file" accept="application/pdf,.pdf">
-              <input type="hidden" name="existing_offer_letter_file" value="${esc(x.offer_letter_file || '')}">
-              ${x.offer_letter_file ? `<div class="preview"><span class="small">Current offer letter PDF</span></div>` : ''}
+              <input type="hidden" name="existing_offer_letter_file" value="${esc(x.offer_letter_file || "")}">
+              ${x.offer_letter_file ? `<div class="preview"><span class="small">Current offer letter PDF</span></div>` : ""}
             </div>
           </div>
           <div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order ?? 0)}"></div>
@@ -609,50 +743,62 @@ function renderExperiences() {
         <p class="status experienceStatus"></p>
       </form>
     </div>
-  `).join('') : '<p class="muted">No experience entries yet.</p>';
+  `,
+        )
+        .join("")
+    : '<p class="muted">No experience entries yet.</p>';
 
   decorateCardLocks(c);
-  $$('.experienceForm', c).forEach(f => f.addEventListener('submit', async e => {
-    e.preventDefault();
-    try {
-      await saveExperienceOnly(f);
-      setStatus($('.experienceStatus', f), 'Experience saved.', true);
-      await load();
-    } catch (err) {
-      setStatus($('.experienceStatus', f), err.message);
-    }
-  }));
-  $$('.delExperience', c).forEach(b => b.addEventListener('click', async () => {
-    if (!confirm('Delete this experience?')) return;
-    try {
-      await api(`/api/admin/experiences/${b.dataset.id}`, { method: 'DELETE' });
-      await load();
-    } catch (e) {
-      alert(e.message);
-    }
-  }));
+  $$(".experienceForm", c).forEach((f) =>
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await saveExperienceOnly(f);
+        setStatus($(".experienceStatus", f), "Experience saved.", true);
+        await load();
+      } catch (err) {
+        setStatus($(".experienceStatus", f), err.message);
+      }
+    }),
+  );
+  $$(".delExperience", c).forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!confirm("Delete this experience?")) return;
+      try {
+        await api(`/api/admin/experiences/${b.dataset.id}`, {
+          method: "DELETE",
+        });
+        await load();
+      } catch (e) {
+        alert(e.message);
+      }
+    }),
+  );
 }
 
 function renderCertificates() {
-  const c = $('#certificates');
+  const c = $("#certificates");
   if (!c) return;
   const items = data.certificates || [];
-  c.innerHTML = items.length ? items.map(x => `
+  c.innerHTML = items.length
+    ? items
+        .map(
+          (x) => `
     <div class="item">
       <form class="certificateForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
         <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
           <div><label>Certificate Title</label><input name="title" value="${esc(x.title)}" required></div>
-          <div><label>Issuer</label><input name="issuer" value="${esc(x.issuer || '')}"></div>
-          <div class="full"><label>Description</label><textarea name="description">${esc(x.description || '')}</textarea></div>
-          <div><label>Credential ID <span class="muted small">(optional)</span></label><input name="credential_id" value="${esc(x.credential_id || '')}"></div>
-          <div><label>Credential URL <span class="muted small">(optional)</span></label><input name="credential_url" value="${esc(x.credential_url || '')}" placeholder="https://..."></div>
+          <div><label>Issuer</label><input name="issuer" value="${esc(x.issuer || "")}"></div>
+          <div class="full"><label>Description</label><textarea name="description">${esc(x.description || "")}</textarea></div>
+          <div><label>Credential ID <span class="muted small">(optional)</span></label><input name="credential_id" value="${esc(x.credential_id || "")}"></div>
+          <div><label>Credential URL <span class="muted small">(optional)</span></label><input name="credential_url" value="${esc(x.credential_url || "")}" placeholder="https://..."></div>
           <div>
             <label>Certificate Image <span class="muted small">(optional)</span></label>
             <input name="certificate_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-            ${x.certificate_image ? `<div class="preview"><img src="${esc(asset(x.certificate_image))}" alt="Certificate"><span class="small">Current certificate</span></div>` : ''}
+            ${x.certificate_image ? `<div class="preview"><img src="${esc(asset(x.certificate_image))}" alt="Certificate"><span class="small">Current certificate</span></div>` : ""}
           </div>
-          <div><label>Issue Date <span class="muted small">(optional)</span></label><input name="issue_date" value="${esc(x.issue_date || '')}"></div>
+          <div><label>Issue Date <span class="muted small">(optional)</span></label><input name="issue_date" value="${esc(x.issue_date || "")}"></div>
           <div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order ?? 0)}"></div>
         </div>
         <div class="actions">
@@ -662,56 +808,68 @@ function renderCertificates() {
         <p class="status certificateStatus"></p>
       </form>
     </div>
-  `).join('') : '<p class="muted">No certificates yet.</p>';
+  `,
+        )
+        .join("")
+    : '<p class="muted">No certificates yet.</p>';
 
   decorateCardLocks(c);
-  $$('.certificateForm', c).forEach(f => f.addEventListener('submit', async e => {
-    e.preventDefault();
-    try {
-      await saveCertificateOnly(f);
-      setStatus($('.certificateStatus', f), 'Certificate saved.', true);
-      await load();
-    } catch (err) {
-      setStatus($('.certificateStatus', f), err.message);
-    }
-  }));
-  $$('.delCertificate', c).forEach(b => b.addEventListener('click', async () => {
-    if (!confirm('Delete this certificate?')) return;
-    try {
-      await api(`/api/admin/certificates/${b.dataset.id}`, { method: 'DELETE' });
-      await load();
-    } catch (e) {
-      alert(e.message);
-    }
-  }));
+  $$(".certificateForm", c).forEach((f) =>
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await saveCertificateOnly(f);
+        setStatus($(".certificateStatus", f), "Certificate saved.", true);
+        await load();
+      } catch (err) {
+        setStatus($(".certificateStatus", f), err.message);
+      }
+    }),
+  );
+  $$(".delCertificate", c).forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!confirm("Delete this certificate?")) return;
+      try {
+        await api(`/api/admin/certificates/${b.dataset.id}`, {
+          method: "DELETE",
+        });
+        await load();
+      } catch (e) {
+        alert(e.message);
+      }
+    }),
+  );
 }
 
 function renderEducation() {
-  const c = $('#education');
+  const c = $("#education");
   if (!c) return;
   const items = data.education || [];
-  c.innerHTML = items.length ? items.map(x => `
+  c.innerHTML = items.length
+    ? items
+        .map(
+          (x) => `
     <div class="item">
       <form class="educationForm" data-id="${esc(x.id)}" enctype="multipart/form-data">
         <div class="item-tools"><button type="button" class="card-lock">🔒 Lock Card</button></div>
         <div class="grid">
-          <div><label>School / College / University</label><input name="institution" value="${esc(x.institution || '')}" required></div>
+          <div><label>School / College / University</label><input name="institution" value="${esc(x.institution || "")}" required></div>
           <div>
             <label>Logo Photo <span class="muted small">(optional)</span></label>
             <div class="filebox">
               <input name="logo_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-              ${x.logo_image ? `<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Institution logo"><span class="small">Current logo</span></div>` : ''}
+              ${x.logo_image ? `<div class="preview"><img src="${esc(asset(x.logo_image))}" alt="Institution logo"><span class="small">Current logo</span></div>` : ""}
             </div>
           </div>
-          <div><label>Discipline</label><input name="discipline" value="${esc(x.discipline || '')}" placeholder="Computer Science"></div>
-          <div><label>Domain</label><input name="domain_name" value="${esc(x.domain_name || '')}" placeholder="Technology"></div>
-          <div><label>Branch</label><input name="branch" value="${esc(x.branch || '')}" placeholder="CSE"></div>
-          <div><label>Stream</label><input name="stream" value="${esc(x.stream || '')}" placeholder="Science"></div>
-          <div><label>Duration</label><input name="duration" value="${esc(x.duration || '')}" placeholder="2022 — 2026"></div>
-          <div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date || '')}"></div>
-          <div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date || '')}"></div>
-          <div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url || '')}" placeholder="https://..."></div>
-          <div class="full"><label>Description <span class="muted small">(optional)</span></label><textarea name="description">${esc(x.description || '')}</textarea></div>
+          <div><label>Discipline</label><input name="discipline" value="${esc(x.discipline || "")}" placeholder="Computer Science"></div>
+          <div><label>Domain</label><input name="domain_name" value="${esc(x.domain_name || "")}" placeholder="Technology"></div>
+          <div><label>Branch</label><input name="branch" value="${esc(x.branch || "")}" placeholder="CSE"></div>
+          <div><label>Stream</label><input name="stream" value="${esc(x.stream || "")}" placeholder="Science"></div>
+          <div><label>Duration</label><input name="duration" value="${esc(x.duration || "")}" placeholder="2022 — 2026"></div>
+          <div><label>Start Date <span class="muted small">(optional)</span></label><input name="start_date" value="${esc(x.start_date || "")}"></div>
+          <div><label>End Date <span class="muted small">(optional)</span></label><input name="end_date" value="${esc(x.end_date || "")}"></div>
+          <div><label>Website <span class="muted small">(optional)</span></label><input name="url" value="${esc(x.url || "")}" placeholder="https://..."></div>
+          <div class="full"><label>Description <span class="muted small">(optional)</span></label><textarea name="description">${esc(x.description || "")}</textarea></div>
           <div><label>Order</label><input name="sort_order" type="number" value="${esc(x.sort_order ?? 0)}"></div>
         </div>
         <div class="actions">
@@ -721,38 +879,45 @@ function renderEducation() {
         <p class="status educationStatus"></p>
       </form>
     </div>
-  `).join('') : '<p class="muted">No education entries yet.</p>';
+  `,
+        )
+        .join("")
+    : '<p class="muted">No education entries yet.</p>';
 
   decorateCardLocks(c);
-  $$('.educationForm', c).forEach(f => f.addEventListener('submit', async e => {
-    e.preventDefault();
-    try {
-      await saveEducationOnly(f);
-      setStatus($('.educationStatus', f), 'Education saved.', true);
-      await load();
-    } catch (err) {
-      setStatus($('.educationStatus', f), err.message);
-    }
-  }));
-  $$('.delEducation', c).forEach(b => b.addEventListener('click', async () => {
-    if (!confirm('Delete this education entry?')) return;
-    try {
-      await api(`/api/admin/education/${b.dataset.id}`, { method: 'DELETE' });
-      await load();
-    } catch (e) {
-      alert(e.message);
-    }
-  }));
+  $$(".educationForm", c).forEach((f) =>
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await saveEducationOnly(f);
+        setStatus($(".educationStatus", f), "Education saved.", true);
+        await load();
+      } catch (err) {
+        setStatus($(".educationStatus", f), err.message);
+      }
+    }),
+  );
+  $$(".delEducation", c).forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!confirm("Delete this education entry?")) return;
+      try {
+        await api(`/api/admin/education/${b.dataset.id}`, { method: "DELETE" });
+        await load();
+      } catch (e) {
+        alert(e.message);
+      }
+    }),
+  );
 }
 
 async function addEducation() {
-  const b = $('#newEducation');
+  const b = $("#newEducation");
   b.disabled = true;
   try {
     const fd = new FormData();
-    fd.set('institution', 'New Institution');
-    fd.set('sort_order', String((data.education?.length || 0) + 1));
-    await api('/api/admin/education', { method: 'POST', body: fd });
+    fd.set("institution", "New Institution");
+    fd.set("sort_order", String((data.education?.length || 0) + 1));
+    await api("/api/admin/education", { method: "POST", body: fd });
     await load();
   } catch (e) {
     alert(e.message);
@@ -762,13 +927,13 @@ async function addEducation() {
 }
 
 async function addExperience() {
-  const b = $('#newExperience');
+  const b = $("#newExperience");
   b.disabled = true;
   try {
     const fd = new FormData();
-    fd.set('title', 'New Experience');
-    fd.set('sort_order', String((data.experiences?.length || 0) + 1));
-    await api('/api/admin/experiences', { method: 'POST', body: fd });
+    fd.set("title", "New Experience");
+    fd.set("sort_order", String((data.experiences?.length || 0) + 1));
+    await api("/api/admin/experiences", { method: "POST", body: fd });
     await load();
   } catch (e) {
     alert(e.message);
@@ -778,13 +943,13 @@ async function addExperience() {
 }
 
 async function addCertificate() {
-  const b = $('#newCertificate');
+  const b = $("#newCertificate");
   b.disabled = true;
   try {
     const fd = new FormData();
-    fd.set('title', 'New Certificate');
-    fd.set('sort_order', String((data.certificates?.length || 0) + 1));
-    await api('/api/admin/certificates', { method: 'POST', body: fd });
+    fd.set("title", "New Certificate");
+    fd.set("sort_order", String((data.certificates?.length || 0) + 1));
+    await api("/api/admin/certificates", { method: "POST", body: fd });
     await load();
   } catch (e) {
     alert(e.message);
@@ -794,17 +959,17 @@ async function addCertificate() {
 }
 
 async function addSkill() {
-  const button = $('#newSkill');
+  const button = $("#newSkill");
   button.disabled = true;
   try {
     const formData = new FormData();
-    formData.set('title', 'New Skill');
-    formData.set('category', 'Other');
-    formData.set('description', '');
-    formData.set('icon_url', '');
-    formData.set('icon_file', '');
-    formData.set('sort_order', String((data.skills?.length || 0) + 1));
-    await api('/api/admin/skills', { method: 'POST', body: formData });
+    formData.set("title", "New Skill");
+    formData.set("category", "Other");
+    formData.set("description", "");
+    formData.set("icon_url", "");
+    formData.set("icon_file", "");
+    formData.set("sort_order", String((data.skills?.length || 0) + 1));
+    await api("/api/admin/skills", { method: "POST", body: formData });
     await load();
   } catch (error) {
     alert(error.message);
@@ -814,30 +979,35 @@ async function addSkill() {
 }
 
 async function addProject() {
-  const button = $('#newProject');
+  const button = $("#newProject");
   if (!button) return;
   button.disabled = true;
   const originalText = button.textContent;
-  button.textContent = 'Adding…';
+  button.textContent = "Adding…";
   try {
     const formData = new FormData();
-    formData.set('title', 'New Project');
-    formData.set('description', '');
-    formData.set('icon_url', '');
-    formData.set('icon_file', '');
-    formData.set('image_url', '');
-    formData.set('image_file', '');
-    formData.set('project_url', '');
-    formData.set('github_url', '');
-    formData.set('project_file', '');
-    formData.set('sort_order', String((data.projects?.length || 0) + 1));
-    const result = await api('/api/admin/projects', { method: 'POST', body: formData });
+    formData.set("title", "New Project");
+    formData.set("description", "");
+    formData.set("icon_url", "");
+    formData.set("icon_file", "");
+    formData.set("image_url", "");
+    formData.set("image_file", "");
+    formData.set("project_url", "");
+    formData.set("github_url", "");
+    formData.set("project_file", "");
+    formData.set("sort_order", String((data.projects?.length || 0) + 1));
+    const result = await api("/api/admin/projects", {
+      method: "POST",
+      body: formData,
+    });
     await load();
     // Put the newly created project in view on mobile and desktop.
-    const projectsCard = $('#projectsCard');
-    projectsCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const projectsCard = $("#projectsCard");
+    projectsCard?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (result?.id) {
-      const created = document.querySelector(`.projectForm[data-id="${CSS.escape(String(result.id))}"]`);
+      const created = document.querySelector(
+        `.projectForm[data-id="${CSS.escape(String(result.id))}"]`,
+      );
       created?.querySelector('input[name="title"]')?.focus();
     }
   } catch (error) {
@@ -848,12 +1018,12 @@ async function addProject() {
   }
 }
 
-$('#saveAllBtn')?.addEventListener('click', saveAllData);
+$("#saveAllBtn")?.addEventListener("click", saveAllData);
 
-$('#newSkill')?.addEventListener('click', addSkill);
-$('#newProject')?.addEventListener('click', addProject);
+$("#newSkill")?.addEventListener("click", addSkill);
+$("#newProject")?.addEventListener("click", addProject);
 start();
 
-$('#newExperience')?.addEventListener('click', addExperience);
-$('#newCertificate')?.addEventListener('click', addCertificate);
-$('#newEducation')?.addEventListener('click', addEducation);
+$("#newExperience")?.addEventListener("click", addExperience);
+$("#newCertificate")?.addEventListener("click", addCertificate);
+$("#newEducation")?.addEventListener("click", addEducation);
