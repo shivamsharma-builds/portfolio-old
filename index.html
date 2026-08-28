@@ -1,77 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Shivam Sharma's portfolio — web developer and C++ programmer.">
-  <meta name="theme-color" content="#0a0a23">
-  <title>Shivam Sharma | Portfolio</title>
-  <link rel="icon" type="image/png" href="./public/icons/favicon.png">
-  <link rel="stylesheet" href="./styles.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Shivam Sharma's portfolio — web developer and C++ programmer."
+    />
+    <meta name="theme-color" content="#0a0a23" />
+    <title>Shivam Sharma | Portfolio</title>
+    <link rel="icon" type="image/png" href="./public/icons/favicon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
 
-<body>
-  <div class="loading-screen" aria-label="Loading portfolio" role="status">
-    <div class="card" aria-hidden="true">
-      <div class="header">
-        <div class="img"></div>
-        <div class="details"><span class="name"></span><span class="about"></span></div>
-      </div>
-      <div class="description">
-        <div class="line line-1"></div>
-        <div class="line line-2"></div>
-        <div class="line line-3"></div>
-      </div>
-      <div class="btns"><div class="btn btn-1"></div><div class="btn btn-2"></div></div>
-    </div>
-  </div>
-
-  <div class="site-content" hidden>
-    <div data-component="Navbar"></div>
-
-    <main>
-      <button class="box-down" type="button" aria-label="Scroll to top">
-        <img src="./public/icons/uparrow.png" alt="">
-      </button>
-
-      <div data-component="Hero"></div>
-      <hr>
-
-      <section class="home" aria-labelledby="intro-title">
-        <div class="container">
-          <div class="intro">
-            <h1 id="intro-title">Hi, I'm <span class="highlight purple">Shivam Sharma</span></h1>
-            <h2>A Passionate <span class="highlight purple">Web Developer &amp; C++ Programmer</span></h2>
-            <p>
-              I specialize in crafting modern, responsive websites and solving problems with
-              efficient code. My approach blends clean design with seamless functionality.
-            </p>
-            <div class="buttons">
-              <a class="button-link" href="#projects">View My Work</a>
-              <a class="button-link" href="./public/resume/resume.pdf" target="_blank" rel="noopener noreferrer">Download Resume</a>
-              <a class="button-link" href="#contact">Let's Connect</a>
-            </div>
-          </div>
-
-          <div class="profile-img">
-            <img src="./src/assets/images/profile.jpg" alt="Portrait of Shivam Sharma">
+  <body>
+    <div class="loading-screen" aria-label="Loading portfolio" role="status">
+      <div class="card" aria-hidden="true">
+        <div class="header">
+          <div class="img"></div>
+          <div class="details">
+            <span class="name"></span><span class="about"></span>
           </div>
         </div>
-      </section>
+        <div class="description">
+          <div class="line line-1"></div>
+          <div class="line line-2"></div>
+          <div class="line line-3"></div>
+        </div>
+        <div class="btns">
+          <div class="btn btn-1"></div>
+          <div class="btn btn-2"></div>
+        </div>
+      </div>
+    </div>
 
-      <hr>
-      <div data-component="About"></div>
-      <hr>
-      <div data-component="Skills"></div>
-      <hr>
-      <div data-component="Projects"></div>
-    </main>
+    <div class="site-content" hidden>
+      <div data-component="Navbar"></div>
 
-    <div data-component="Contact"></div>
-  </div>
+      <main>
+        <button class="box-down" type="button" aria-label="Scroll to top">
+          <img src="./public/icons/uparrow.png" alt="" />
+        </button>
 
-  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="./script.js"></script>
-</body>
+        <div data-component="Hero"></div>
+        <hr />
+
+        <section class="home" aria-labelledby="intro-title">
+          <div class="container">
+            <div class="intro">
+              <h1 id="intro-title">
+                Hi, I'm <span class="highlight purple">Shivam Sharma</span>
+              </h1>
+              <h2>
+                A Passionate
+                <span class="highlight purple"
+                  >Web Developer &amp; C++ Programmer</span
+                >
+              </h2>
+              <p>
+                I specialize in crafting modern, responsive websites and solving
+                problems with efficient code. My approach blends clean design
+                with seamless functionality.
+              </p>
+              <div class="buttons">
+                <a class="button-link" href="#projects">View My Work</a>
+                <a
+                  class="button-link"
+                  href="./public/resume/resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Download Resume</a
+                >
+                <a class="button-link" href="#contact">Let's Connect</a>
+              </div>
+            </div>
+
+            <div class="profile-img">
+              <img
+                src="./src/assets/images/profile.jpg"
+                alt="Portrait of Shivam Sharma"
+              />
+            </div>
+          </div>
+        </section>
+
+        <hr />
+        <div data-component="About"></div>
+        <hr />
+        <div data-component="Skills"></div>
+        <hr />
+        <div data-component="Projects"></div>
+      </main>
+
+      <div data-component="Contact"></div>
+    </div>
+
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
 </html>
